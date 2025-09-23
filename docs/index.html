@@ -3,92 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-User Product Manager</title>
+    <title>Multi-User Data Demo</title>
     <style>
-        /* Add this to your existing CSS */
-        .user-management {
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .user-section {
             background: #e3f2fd;
             padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-        .user-list {
-            margin: 10px 0;
+        
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
         }
-        .user-item {
-            padding: 5px;
-            margin: 2px 0;
-            background: white;
-            border-radius: 3px;
+        
+        input {
+            width: 200px;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .data-section {
+            margin-top: 20px;
+        }
+        
+        .data-item {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+        }
+        
+        .user-indicator {
+            font-weight: bold;
+            color: #2196F3;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
         }
     </style>
 </head>
 <body>
-    <!-- Add this section to your HTML -->
-    <div class="user-management">
-        <h3>Multi-User Demo</h3>
-        <div>
-            <input type="text" id="username" placeholder="Enter your name">
-            <button onclick="loginWithUsername()">Login with Name</button>
+    <div class="container">
+        <h1>Multi-User Data Sharing Demo</h1>
+        
+        <div class="instructions">
+            <h3>How to test:</h3>
+            <p>1. Enter your name and add some data</p>
+            <p>2. Open this page in another browser/device</p>
+            <p>3. Enter a different name and add more data</p>
+            <p>4. See how data appears on both devices in real-time!</p>
         </div>
-        <div class="user-list" id="active-users">
-            <h4>Active Users:</h4>
-            <!-- Active users will appear here -->
+        
+        <div class="user-section">
+            <h2>User Info</h2>
+            <input type="text" id="username" placeholder="Enter your name">
+            <button onclick="setUsername()">Set Name</button>
+            <p id="current-user">Current user: Not set</p>
+        </div>
+        
+        <div class="user-section">
+            <h2>Add Data</h2>
+            <input type="text" id="new-data" placeholder="Enter some data">
+            <button onclick="addData()">Add Data</button>
+        </div>
+        
+        <div class="data-section">
+            <h2>Shared Data (Visible to all users)</h2>
+            <div id="data-container">
+                <!-- Data will appear here -->
+            </div>
         </div>
     </div>
 
     <script>
-        // Add these variables
-        let activeUsers = {};
-        let currentUsername = '';
-
-        function loginWithUsername() {
+        // Simulate a simple backend using localStorage
+        // In a real app, this would be replaced with API calls to a server
+        
+        // Initialize data storage
+        if (!localStorage.getItem('sharedData')) {
+            localStorage.setItem('sharedData', JSON.stringify([]));
+        }
+        
+        // Get current username
+        let currentUser = localStorage.getItem('currentUser') || 'Anonymous';
+        document.getElementById('current-user').textContent = `Current user: ${currentUser}`;
+        
+        // Set username
+        function setUsername() {
             const username = document.getElementById('username').value.trim();
-            if (!username) {
-                alert('Please enter a name');
+            if (username) {
+                currentUser = username;
+                localStorage.setItem('currentUser', username);
+                document.getElementById('current-user').textContent = `Current user: ${currentUser}`;
+                document.getElementById('username').value = '';
+                alert(`Username set to: ${username}`);
+            }
+        }
+        
+        // Add new data
+        function addData() {
+            const dataInput = document.getElementById('new-data');
+            const dataText = dataInput.value.trim();
+            
+            if (!dataText) {
+                alert('Please enter some data');
                 return;
             }
             
-            currentUsername = username;
-            activeUsers[username] = {
-                loginTime: new Date(),
-                userType: 'vendor' // Default, can be changed
+            if (currentUser === 'Anonymous') {
+                alert('Please set your username first');
+                return;
+            }
+            
+            // Create data object
+            const newData = {
+                user: currentUser,
+                text: dataText,
+                timestamp: new Date().toLocaleString()
             };
             
-            updateActiveUsersList();
-            login('vendor'); // Or let user choose type
-        }
-
-        function updateActiveUsersList() {
-            const userList = document.getElementById('active-users');
-            userList.innerHTML = '<h4>Active Users:</h4>';
+            // Get existing data
+            const sharedData = JSON.parse(localStorage.getItem('sharedData'));
             
-            Object.keys(activeUsers).forEach(username => {
-                const userDiv = document.createElement('div');
-                userDiv.className = 'user-item';
-                userDiv.textContent = `${username} (${activeUsers[username].userType})`;
-                userList.appendChild(userDiv);
+            // Add new data
+            sharedData.push(newData);
+            
+            // Save back to storage
+            localStorage.setItem('sharedData', JSON.stringify(sharedData));
+            
+            // Clear input
+            dataInput.value = '';
+            
+            // Update display
+            displayData();
+            
+            // Simulate real-time update for other tabs/windows
+            window.dispatchEvent(new Event('storage'));
+        }
+        
+        // Display all data
+        function displayData() {
+            const dataContainer = document.getElementById('data-container');
+            const sharedData = JSON.parse(localStorage.getItem('sharedData'));
+            
+            // Clear container
+            dataContainer.innerHTML = '';
+            
+            // Add each data item
+            sharedData.forEach(item => {
+                const dataElement = document.createElement('div');
+                dataElement.className = 'data-item';
+                dataElement.innerHTML = `
+                    <span class="user-indicator">${item.user}</span>: ${item.text}
+                    <br><small>Added: ${item.timestamp}</small>
+                `;
+                dataContainer.appendChild(dataElement);
             });
+            
+            // Scroll to bottom to see latest entry
+            dataContainer.scrollTop = dataContainer.scrollHeight;
         }
-
-        // Modify product data to include user-specific info
-        function addUserSpecificProduct(productData) {
-            return {
-                ...productData,
-                addedBy: currentUsername,
-                userAlert: generateUserSpecificAlert(currentUsername)
-            };
-        }
-
-        function generateUserSpecificAlert(username) {
-            const alerts = [
-                `Special offer for ${username}!`,
-                `${username}, these items need attention`,
-                `Priority alert for ${username}`,
-                `Custom notification for ${username}`
-            ];
-            return alerts[Math.floor(Math.random() * alerts.length)];
-        }
+        
+        // Listen for changes from other tabs/windows
+        window.addEventListener('storage', function() {
+            displayData();
+        });
+        
+        // Initial display
+        displayData();
+        
+        // Auto-refresh every 2 seconds (simulates real-time updates)
+        setInterval(displayData, 2000);
     </script>
 </body>
 </html>

@@ -1,226 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-User Data Demo</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        
-        body {
-            background-color: #f0f2f5;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .user-section {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        input, button {
-            padding: 10px;
-            margin: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        input {
-            width: 200px;
-        }
-        
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        button:hover {
-            background: #45a049;
-        }
-        
-        .data-section {
-            margin-top: 20px;
-        }
-        
-        .data-item {
-            background: #f9f9f9;
-            padding: 10px;
-            margin: 10px 0;
-            border-left: 4px solid #4CAF50;
-            border-radius: 4px;
-        }
-        
-        .user-indicator {
-            font-weight: bold;
-            color: #2196F3;
-        }
-        
-        .instructions {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #ffc107;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Shared Test</title>
+<style>
+  body { font-family: Arial; padding: 20px; background:#f5f5f5; }
+  input { padding: 8px; width: 200px; }
+  button { padding: 8px 12px; margin-left:5px; }
+  ul { margin-top:20px; }
+  li { padding:5px 0; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Multi-User Data Sharing Demo</h1>
-        
-        <div class="instructions">
-            <h3>How to test:</h3>
-            <p>1. Enter your name and add some data</p>
-            <p>2. Open this page in another browser/device</p>
-            <p>3. Enter a different name and add more data</p>
-            <p>4. See how data appears on both devices in real-time!</p>
-        </div>
-        
-        <div class="user-section">
-            <h2>User Info</h2>
-            <input type="text" id="username" placeholder="Enter your name">
-            <button onclick="setUsername()">Set Name</button>
-            <p id="current-user">Current user: Not set</p>
-        </div>
-        
-        <div class="user-section">
-            <h2>Add Data</h2>
-            <input type="text" id="new-data" placeholder="Enter some data">
-            <button onclick="addData()">Add Data</button>
-        </div>
-        
-        <div class="data-section">
-            <h2>Shared Data (Visible to all users)</h2>
-            <div id="data-container">
-                <!-- Data will appear here -->
-            </div>
-        </div>
-    </div>
+<h2>Live Shared Input Test</h2>
 
-    <script>
-        // Simulate a simple backend using localStorage
-        // In a real app, this would be replaced with API calls to a server
-        
-        // Initialize data storage
-        if (!localStorage.getItem('sharedData')) {
-            localStorage.setItem('sharedData', JSON.stringify([]));
-        }
-        
-        // Get current username
-        let currentUser = localStorage.getItem('currentUser') || 'Anonymous';
-        document.getElementById('current-user').textContent = `Current user: ${currentUser}`;
-        
-        // Set username
-        function setUsername() {
-            const username = document.getElementById('username').value.trim();
-            if (username) {
-                currentUser = username;
-                localStorage.setItem('currentUser', username);
-                document.getElementById('current-user').textContent = `Current user: ${currentUser}`;
-                document.getElementById('username').value = '';
-                alert(`Username set to: ${username}`);
-            }
-        }
-        
-        // Add new data
-        function addData() {
-            const dataInput = document.getElementById('new-data');
-            const dataText = dataInput.value.trim();
-            
-            if (!dataText) {
-                alert('Please enter some data');
-                return;
-            }
-            
-            if (currentUser === 'Anonymous') {
-                alert('Please set your username first');
-                return;
-            }
-            
-            // Create data object
-            const newData = {
-                user: currentUser,
-                text: dataText,
-                timestamp: new Date().toLocaleString()
-            };
-            
-            // Get existing data
-            const sharedData = JSON.parse(localStorage.getItem('sharedData'));
-            
-            // Add new data
-            sharedData.push(newData);
-            
-            // Save back to storage
-            localStorage.setItem('sharedData', JSON.stringify(sharedData));
-            
-            // Clear input
-            dataInput.value = '';
-            
-            // Update display
-            displayData();
-            
-            // Simulate real-time update for other tabs/windows
-            window.dispatchEvent(new Event('storage'));
-        }
-        
-        // Display all data
-        function displayData() {
-            const dataContainer = document.getElementById('data-container');
-            const sharedData = JSON.parse(localStorage.getItem('sharedData'));
-            
-            // Clear container
-            dataContainer.innerHTML = '';
-            
-            // Add each data item
-            sharedData.forEach(item => {
-                const dataElement = document.createElement('div');
-                dataElement.className = 'data-item';
-                dataElement.innerHTML = `
-                    <span class="user-indicator">${item.user}</span>: ${item.text}
-                    <br><small>Added: ${item.timestamp}</small>
-                `;
-                dataContainer.appendChild(dataElement);
-            });
-            
-            // Scroll to bottom to see latest entry
-            dataContainer.scrollTop = dataContainer.scrollHeight;
-        }
-        
-        // Listen for changes from other tabs/windows
-        window.addEventListener('storage', function() {
-            displayData();
-        });
-        
-        // Initial display
-        displayData();
-        
-        // Auto-refresh every 2 seconds (simulates real-time updates)
-        setInterval(displayData, 2000);
-    </script>
+<form id="msg-form">
+  <input type="text" id="msg-input" placeholder="Type something" required>
+  <button type="submit">Submit</button>
+</form>
+
+<h3>Messages:</h3>
+<ul id="msg-list"></ul>
+
+<script>
+const form = document.getElementById('msg-form');
+const input = document.getElementById('msg-input');
+const list = document.getElementById('msg-list');
+
+// CONFIG: replace with your bin ID and JSONBin secret key
+const BIN_ID = "YOUR_BIN_ID_HERE";
+const SECRET_KEY = "YOUR_JSONBIN_SECRET_HERE";
+const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+// Submit message
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Get current messages
+  const messages = await fetchMessages();
+
+  // Add new message
+  messages.push(text);
+
+  // Update bin
+  await fetch(API_URL, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': SECRET_KEY
+    },
+    body: JSON.stringify({messages})
+  });
+
+  input.value = '';
+  renderMessages(messages);
+});
+
+// Fetch messages from jsonbin
+async function fetchMessages() {
+  try {
+    const res = await fetch(API_URL + "/latest", {
+      headers: {'X-Master-Key': SECRET_KEY}
+    });
+    const data = await res.json();
+    return data.record.messages || [];
+  } catch(err) {
+    console.error(err);
+    return [];
+  }
+}
+
+// Render messages
+function renderMessages(messages) {
+  list.innerHTML = '';
+  messages.forEach(msg => {
+    const li = document.createElement('li');
+    li.textContent = msg;
+    list.appendChild(li);
+  });
+}
+
+// Poll every 2 seconds for live updates
+setInterval(async () => {
+  const messages = await fetchMessages();
+  renderMessages(messages);
+}, 2000);
+
+// Initial fetch
+fetchMessages().then(renderMessages);
+</script>
 </body>
 </html>

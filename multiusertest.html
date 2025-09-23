@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-User Product Manager</title>
+    <style>
+        /* Add this to your existing CSS */
+        .user-management {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .user-list {
+            margin: 10px 0;
+        }
+        .user-item {
+            padding: 5px;
+            margin: 2px 0;
+            background: white;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Add this section to your HTML -->
+    <div class="user-management">
+        <h3>Multi-User Demo</h3>
+        <div>
+            <input type="text" id="username" placeholder="Enter your name">
+            <button onclick="loginWithUsername()">Login with Name</button>
+        </div>
+        <div class="user-list" id="active-users">
+            <h4>Active Users:</h4>
+            <!-- Active users will appear here -->
+        </div>
+    </div>
+
+    <script>
+        // Add these variables
+        let activeUsers = {};
+        let currentUsername = '';
+
+        function loginWithUsername() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                alert('Please enter a name');
+                return;
+            }
+            
+            currentUsername = username;
+            activeUsers[username] = {
+                loginTime: new Date(),
+                userType: 'vendor' // Default, can be changed
+            };
+            
+            updateActiveUsersList();
+            login('vendor'); // Or let user choose type
+        }
+
+        function updateActiveUsersList() {
+            const userList = document.getElementById('active-users');
+            userList.innerHTML = '<h4>Active Users:</h4>';
+            
+            Object.keys(activeUsers).forEach(username => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-item';
+                userDiv.textContent = `${username} (${activeUsers[username].userType})`;
+                userList.appendChild(userDiv);
+            });
+        }
+
+        // Modify product data to include user-specific info
+        function addUserSpecificProduct(productData) {
+            return {
+                ...productData,
+                addedBy: currentUsername,
+                userAlert: generateUserSpecificAlert(currentUsername)
+            };
+        }
+
+        function generateUserSpecificAlert(username) {
+            const alerts = [
+                `Special offer for ${username}!`,
+                `${username}, these items need attention`,
+                `Priority alert for ${username}`,
+                `Custom notification for ${username}`
+            ];
+            return alerts[Math.floor(Math.random() * alerts.length)];
+        }
+    </script>
+</body>
+</html>

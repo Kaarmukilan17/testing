@@ -626,100 +626,101 @@
             productForm.reset();
         }
         
-        // Add product to JSONBin (simulating ESP32 backend)
+        
         async function addProductToServer(productData) {
-            try {
-                // Get current products
-                const currentProducts = await fetchProductsFromServer();
-                
-                // Check if product ID already exists
-                const existingIndex = currentProducts.findIndex(p => p.id === productData.id);
-                
-                if (existingIndex !== -1) {
-                    // Update existing product
-                    currentProducts[existingIndex] = productData;
-                    showStatus('Product updated successfully!', 'success', 'vendor');
-                } else {
-                    // Add new product
-                    currentProducts.push(productData);
-                    showStatus('Product added successfully!', 'success', 'vendor');
-                }
-                
-                // Save updated products to server
-                await saveProductsToServer(currentProducts);
-                
-                // Update local products and UI
-                products = currentProducts;
-                renderProductLists();
-                checkExpiryAlerts();
-                
-            } catch (error) {
-                console.error('Error adding product:', error);
-                showStatus('Error adding product. Please try again.', 'error', 'vendor');
-            }
+    try {
+        // Get current full data from server
+        const fullData = await fetchFullDataFromServer();
+
+        // Update products array
+        const existingIndex = fullData.products.findIndex(p => p.id === productData.id);
+
+        if (existingIndex !== -1) {
+            fullData.products[existingIndex] = productData;
+            showStatus('Product updated successfully!', 'success', 'vendor');
+        } else {
+            fullData.products.push(productData);
+            showStatus('Product added successfully!', 'success', 'vendor');
         }
+
+        // Save full data back to server
+        await saveFullDataToServer(fullData);
+
+        // Update local products and UI
+        products = fullData.products;
+        renderProductLists();
+        checkExpiryAlerts();
+
+    } catch (error) {
+        console.error('Error adding product:', error);
+        showStatus('Error adding product. Please try again.', 'error', 'vendor');
+    }
+}
+
+// Replace deleteProductFromServer with this version
+async function deleteProductFromServer(productId) {
+    try {
+        // Get current full data from server
+        const fullData = await fetchFullDataFromServer();
+
+        // Filter out the product to delete
+        fullData.products = fullData.products.filter(p => p.id !== productId);
+
+        // Save full data back to server
+        await saveFullDataToServer(fullData);
+
+        // Update local products and UI
+        products = fullData.products;
+        renderProductLists();
+        checkExpiryAlerts();
+
+        showStatus('Product deleted successfully!', 'success', 'vendor');
+
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        showStatus('Error deleting product. Please try again.', 'error', 'vendor');
+    }
+}
+
+// Replace purchaseProductFromServer with this version
+async function purchaseProductFromServer(productId) {
+    try {
+        // Get current full data from server
+        const fullData = await fetchFullDataFromServer();
+
+        // Find the product
+        const productIndex = fullData.products.findIndex(p => p.id === productId);
+
+        if (productIndex === -1) {
+            showStatus('Product not found!', 'error', 'customer');
+            return;
+        }
+
+        if (fullData.products[productIndex].quantity > 0) {
+            // Decrement quantity
+            fullData.products[productIndex].quantity -= 1;
+
+            // Save full data back to server
+            await saveFullDataToServer(fullData);
+
+            // Update local products and UI
+            products = fullData.products;
+            renderProductLists();
+            checkExpiryAlerts();
+
+            showStatus('Product purchased successfully!', 'success', 'customer');
+        } else {
+            showStatus('Product is out of stock!', 'error', 'customer');
+        }
+
+    } catch (error) {
+        console.error('Error purchasing product:', error);
+        showStatus('Error purchasing product. Please try again.', 'error', 'customer');
+    }
+}
+       
         
-        // Delete product from server
-        async function deleteProductFromServer(productId) {
-            try {
-                // Get current products
-                const currentProducts = await fetchProductsFromServer();
-                
-                // Filter out the product to delete
-                const updatedProducts = currentProducts.filter(p => p.id !== productId);
-                
-                // Save updated products to server
-                await saveProductsToServer(updatedProducts);
-                
-                // Update local products and UI
-                products = updatedProducts;
-                renderProductLists();
-                checkExpiryAlerts();
-                
-                showStatus('Product deleted successfully!', 'success', 'vendor');
-                
-            } catch (error) {
-                console.error('Error deleting product:', error);
-                showStatus('Error deleting product. Please try again.', 'error', 'vendor');
-            }
-        }
-        
-        // Purchase product (decrement quantity)
-        async function purchaseProductFromServer(productId) {
-            try {
-                // Get current products
-                const currentProducts = await fetchProductsFromServer();
-                
-                // Find the product
-                const productIndex = currentProducts.findIndex(p => p.id === productId);
-                
-                if (productIndex === -1) {
-                    showStatus('Product not found!', 'error', 'customer');
-                    return;
-                }
-                
-                if (currentProducts[productIndex].quantity > 0) {
-                    // Decrement quantity
-                    currentProducts[productIndex].quantity -= 1;
-                    
-                    // Save updated products to server
-                    await saveProductsToServer(currentProducts);
-                    
-                    // Update local products and UI
-                    products = currentProducts;
-                    renderProductLists();
-                    checkExpiryAlerts();
-                    
-                    showStatus('Product purchased successfully!', 'success', 'customer');
-                } else {
-                    showStatus('Product is out of stock!', 'error', 'customer');
-                }
-                
-            } catch (error) {
-                console.error('Error purchasing product:', error);
-                showStatus('Error purchasing product. Please try again.', 'error', 'customer');
-            }
-        }
+       
         
         // Fetch products from JSONBin server
         async function fetchProductsFromServer() {
@@ -769,25 +770,27 @@
         }
         
         // Fetch products and update UI
-        async function fetchProducts() {
-            // Don't fetch if configuration is not set
-            if (BIN_ID === "enter" || SECRET_KEY === "enter.") {
-                return;
-            }
-            
-            try {
-                const serverProducts = await fetchProductsFromServer();
-                
-                // Only update if products have changed
-                if (JSON.stringify(serverProducts) !== JSON.stringify(products)) {
-                    products = serverProducts;
-                    renderProductLists();
-                    checkExpiryAlerts();
-                }
-            } catch (error) {
-                console.error('Error in fetchProducts:', error);
-            }
+       
+async function fetchProducts() {
+    // Don't fetch if configuration is not set
+    if (BIN_ID === "enter" || SECRET_KEY === "enter.") {
+        return;
+    }
+
+    try {
+        const fullData = await fetchFullDataFromServer();
+
+        // Only update if products have changed
+        if (JSON.stringify(fullData.products) !== JSON.stringify(products)) {
+            products = fullData.products;
+            renderProductLists();
+            checkExpiryAlerts();
         }
+    } catch (error) {
+        console.error('Error in fetchProducts:', error);
+    }
+}
+
         
         // Render product lists for both vendor and customer views
         function renderProductLists() {
@@ -1039,60 +1042,63 @@
         
         // Initialize with some sample data if empty
         async function initializeSampleData() {
-            // Don't initialize if configuration is not set
-            if (BIN_ID === "enter" || SECRET_KEY === "enter.") {
-                return;
+    // Don't initialize if configuration is not set
+    if (BIN_ID === "enter" || SECRET_KEY === "enter.") {
+        return;
+    }
+
+    const fullData = await fetchFullDataFromServer();
+
+    if (fullData.products.length === 0) {
+        const sampleProducts = [
+            {
+                id: 'P001',
+                name: 'Organic Apples',
+                quantity: 50,
+                expiryDate: getFutureDate(20), // 20 days from now
+                vendorPhone: '555-1234',
+                batchNumber: 'BATCH001',
+                addedBy: 'System',
+                addedAt: new Date().toISOString()
+            },
+            {
+                id: 'P002',
+                name: 'Whole Wheat Bread',
+                quantity: 25,
+                expiryDate: getFutureDate(5), // 5 days from now
+                vendorPhone: '555-5678',
+                batchNumber: 'BATCH002',
+                addedBy: 'System',
+                addedAt: new Date().toISOString()
             }
-            
-            const currentProducts = await fetchProductsFromServer();
-            
-            if (currentProducts.length === 0) {
-                const sampleProducts = [
-                    {
-                        id: 'P001',
-                        name: 'Organic Apples',
-                        quantity: 50,
-                        expiryDate: '2024-12-15',
-                        vendorPhone: '555-1234',
-                        batchNumber: 'BATCH001',
-                        addedBy: 'System',
-                        addedAt: new Date().toISOString()
-                    },
-                    {
-                        id: 'P002',
-                        name: 'Whole Wheat Bread',
-                        quantity: 25,
-                        expiryDate: '2024-11-30',
-                        vendorPhone: '555-5678',
-                        batchNumber: 'BATCH002',
-                        addedBy: 'System',
-                        addedAt: new Date().toISOString()
-                    },
-                    {
-                        id: 'P003',
-                        name: 'Free-range Eggs',
-                        quantity: 5,
-                        expiryDate: '2024-10-25',
-                        vendorPhone: '555-9012',
-                        batchNumber: 'BATCH003',
-                        addedBy: 'System',
-                        addedAt: new Date().toISOString()
-                    }
-                ];
-                
-                await saveProductsToServer(sampleProducts);
-                products = sampleProducts;
-                renderProductLists();
-                checkExpiryAlerts();
-            }
-        }
+        ];
+
+        const sampleData = {
+            products: sampleProducts,
+            purchases: {} // Empty purchases object
+        };
+
+        await saveFullDataToServer(sampleData);
+        products = sampleProducts;
+        renderProductLists();
+        checkExpiryAlerts();
+    }
+}
+
+function getFutureDate(daysFromNow) {
+    const date = new Date();
+    date.setDate(date.getDate() + daysFromNow);
+    return date.toISOString().split('T')[0];
+}
+
+
         
         // Call initialization on load if configuration is set
         window.addEventListener('load', function() {
-            if (BIN_ID !== "enter" && SECRET_KEY !== "enter.") {
-                initializeSampleData();
-            }
-        });
+    if (BIN_ID !== "enter" && SECRET_KEY !== "enter.") {
+        initializeSampleData();
+    }
+});
 
    
 
@@ -1233,54 +1239,88 @@
 
         // ===== PURCHASE TRACKING SYSTEM =====
         // Track customer purchases
-        async function trackCustomerPurchase(productId, productName) {
-            if (!currentCustomer) return;
-            
-            try {
-                // Get current data from server
-                const response = await fetch(API_URL + '/latest', {
-                    headers: {'X-Master-Key': SECRET_KEY}
-                });
-                
-                if (!response.ok) return;
-                
-                const data = await response.json();
-                const serverData = data.record;
-                
-                // Initialize purchases object if it doesn't exist
-                if (!serverData.purchases) {
-                    serverData.purchases = {};
-                }
-                
-                // Initialize customer's purchase array if it doesn't exist
-                if (!serverData.purchases[currentCustomer]) {
-                    serverData.purchases[currentCustomer] = [];
-                }
-                
-                // Add new purchase
-                const purchaseRecord = {
-                    productId: productId,
-                    productName: productName,
-                    date: new Date().toISOString(),
-                    timestamp: Date.now()
-                };
-                
-                serverData.purchases[currentCustomer].push(purchaseRecord);
-                
-                // Save back to server
-                await fetch(API_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': SECRET_KEY
-                    },
-                    body: JSON.stringify(serverData)
-                });
-                
-            } catch (error) {
-                console.error('Error tracking purchase:', error);
-            }
+    
+async function trackCustomerPurchase(productId, productName) {
+    if (!currentCustomer) return;
+
+    try {
+        // Get current full data from server
+        const fullData = await fetchFullDataFromServer();
+
+        // Initialize purchases object if it doesn't exist
+        if (!fullData.purchases) {
+            fullData.purchases = {};
         }
+
+        // Initialize customer's purchase array if it doesn't exist
+        if (!fullData.purchases[currentCustomer]) {
+            fullData.purchases[currentCustomer] = [];
+        }
+
+        // Add new purchase
+        const purchaseRecord = {
+            productId: productId,
+            productName: productName,
+            date: new Date().toISOString(),
+            timestamp: Date.now()
+        };
+
+        fullData.purchases[currentCustomer].push(purchaseRecord);
+
+        // Save full data back to server
+        await saveFullDataToServer(fullData);
+
+    } catch (error) {
+        console.error('Error tracking purchase:', error);
+    }
+}
+
+
+async function fetchFullDataFromServer() {
+    try {
+        const response = await fetch(API_URL + '/latest', {
+            headers: {'X-Master-Key': SECRET_KEY}
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // Ensure consistent schema
+        return {
+            products: data.record.products || [],
+            purchases: data.record.purchases || {}
+        };
+    } catch (error) {
+        console.error('Error fetching full data:', error);
+        // Return default schema if error
+        return { products: [], purchases: {} };
+    }
+}
+
+async function saveFullDataToServer(fullData) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': SECRET_KEY
+            },
+            body: JSON.stringify(fullData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error saving full data:', error);
+        throw error;
+    }
+}
+
 
         // ===== PURCHASE HISTORY SECTION =====
         // Add purchase history section to customer dashboard
@@ -1358,37 +1398,69 @@
 
         // ===== ENHANCED EXPIRY ALERTS =====
         // Update expiry alerts to show customer-specific warnings
-        function updateCustomerExpiryAlerts() {
-            const expiryAlerts = document.getElementById('customer-expiry-alerts');
-            if (!expiryAlerts) return;
-            
-            // Check for products expiring in the next 7 days
-            const today = new Date();
-            const sevenDaysFromNow = new Date(today);
-            sevenDaysFromNow.setDate(today.getDate() + 7);
-            
-            const expiringProducts = products.filter(product => {
-                const expiryDate = new Date(product.expiryDate);
-                return expiryDate <= sevenDaysFromNow && expiryDate >= today;
-            });
-            
-            if (expiringProducts.length > 0) {
-                let alertHTML = '<h3>⚠️ Products Nearing Expiry</h3>';
-                alertHTML += '<p>The following products will expire soon. Consider purchasing these first!</p>';
-                alertHTML += '<ul class="expiry-list">';
-                
-                expiringProducts.forEach(product => {
-                    const daysUntilExpiry = calculateDaysUntilExpiry(product.expiryDate);
-                    alertHTML += `<li>${product.name} - Expires in ${daysUntilExpiry} days</li>`;
-                });
-                
-                alertHTML += '</ul>';
-                expiryAlerts.innerHTML = alertHTML;
-                expiryAlerts.style.display = 'block';
-            } else {
-                expiryAlerts.style.display = 'none';
-            }
+        
+function updateCustomerExpiryAlerts() {
+    const expiryAlerts = document.getElementById('customer-expiry-alerts');
+    if (!expiryAlerts || !currentCustomer) return;
+
+    // Load customer's purchase history
+    loadCustomerPurchaseHistory().then(customerPurchases => {
+        if (!customerPurchases || customerPurchases.length === 0) {
+            expiryAlerts.style.display = 'none';
+            return;
         }
+
+        // Get product IDs that customer has purchased
+        const purchasedProductIds = customerPurchases.map(p => p.productId);
+
+        // Filter products to only those purchased by customer
+        const customerProducts = products.filter(product =>
+            purchasedProductIds.includes(product.id)
+        );
+
+        // Check for products expiring in the next 7 days
+        const today = new Date();
+        const sevenDaysFromNow = new Date(today);
+        sevenDaysFromNow.setDate(today.getDate() + 7);
+
+        const expiringProducts = customerProducts.filter(product => {
+            const expiryDate = new Date(product.expiryDate);
+            return expiryDate <= sevenDaysFromNow && expiryDate >= today;
+        });
+
+        if (expiringProducts.length > 0) {
+            let alertHTML = '<h3>⚠️ Your Purchases Nearing Expiry</h3>';
+            alertHTML += '<p>These products you purchased will expire soon:</p>';
+            alertHTML += '<ul class="expiry-list">';
+
+            expiringProducts.forEach(product => {
+                const daysUntilExpiry = calculateDaysUntilExpiry(product.expiryDate);
+                alertHTML += `<li><strong>${product.name}</strong> - Expires in ${daysUntilExpiry} days</li>`;
+            });
+
+            alertHTML += '</ul>';
+            expiryAlerts.innerHTML = alertHTML;
+            expiryAlerts.style.display = 'block';
+        } else {
+            expiryAlerts.style.display = 'none';
+        }
+    });
+}
+
+// Load customer's purchase history (helper for expiry alerts)
+    async function loadCustomerPurchaseHistory() {
+    if (!currentCustomer) return [];
+
+    try {
+        const fullData = await fetchFullDataFromServer();
+        return fullData.purchases[currentCustomer] || [];
+    } catch (error) {
+        console.error('Error loading purchase history:', error);
+        return [];
+    }
+}
+
+
 
         // ===== MODIFIED PURCHASE FUNCTION =====
         // Update the existing purchase function to track customer purchases

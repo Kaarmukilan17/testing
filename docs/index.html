@@ -1093,6 +1093,378 @@
                 initializeSampleData();
             }
         });
+
+   
+
+         
+
+        // ===== CUSTOMER LOGIN SYSTEM =====
+        // Predefined customers (add this at the top of your script section)
+        const customers = {
+            customer1: "pass1",
+            customer2: "pass2", 
+            customer3: "pass3"
+        };
+
+        // Customer login state
+        let currentCustomer = localStorage.getItem('currentCustomer') || null;
+
+        // Add customer login form to the customer page (before the existing content)
+        const customerLoginHTML = `
+            <div id="customer-login-section" class="form-container">
+                <h3>Customer Login</h3>
+                <form id="customer-login-form">
+                    <div class="form-group">
+                        <label for="customer-username">Username</label>
+                        <input type="text" id="customer-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-password">Password</label>
+                        <input type="password" id="customer-password" required>
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+                <div id="customer-login-status" class="status-message" style="display: none; margin-top: 10px;"></div>
+            </div>
+            
+            <div id="customer-dashboard" style="display: none;">
+                <!-- Existing customer content will go here -->
+            </div>
+        `;
+
+        // Function to initialize customer login system
+        function initializeCustomerLogin() {
+            // Add login form to customer page
+            const customerPage = document.getElementById('customer-page');
+            const existingContent = customerPage.innerHTML;
+            customerPage.innerHTML = customerLoginHTML + existingContent;
+            
+            // Move existing customer content to dashboard section
+            const customerDashboard = document.getElementById('customer-dashboard');
+            const navBar = document.querySelector('#customer-page .nav-bar');
+            const customerStatus = document.getElementById('customer-status');
+            const expiryAlerts = document.getElementById('customer-expiry-alerts');
+            const customerContent = document.querySelector('#customer-page > div:last-child');
+            
+            if (navBar && customerStatus && expiryAlerts && customerContent) {
+                customerDashboard.appendChild(navBar);
+                customerDashboard.appendChild(customerStatus);
+                customerDashboard.appendChild(expiryAlerts);
+                customerDashboard.appendChild(customerContent);
+            }
+            
+            // Add login form handler
+            const loginForm = document.getElementById('customer-login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleCustomerLogin);
+            }
+            
+            // Check if customer is already logged in
+            if (currentCustomer) {
+                showCustomerDashboard();
+            }
+        }
+
+        // Handle customer login
+        function handleCustomerLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('customer-username').value.trim();
+            const password = document.getElementById('customer-password').value;
+            const loginStatus = document.getElementById('customer-login-status');
+            
+            if (!username || !password) {
+                showLoginStatus('Please enter both username and password', 'error');
+                return;
+            }
+            
+            if (customers[username] && customers[username] === password) {
+                // Successful login
+                currentCustomer = username;
+                localStorage.setItem('currentCustomer', username);
+                showLoginStatus('Login successful!', 'success');
+                
+                // Show dashboard after a brief delay
+                setTimeout(() => {
+                    showCustomerDashboard();
+                }, 1000);
+            } else {
+                // Failed login
+                showLoginStatus('Invalid username or password', 'error');
+            }
+        }
+
+        // Show login status message
+        function showLoginStatus(message, type) {
+            const loginStatus = document.getElementById('customer-login-status');
+            loginStatus.textContent = message;
+            loginStatus.className = `status-message ${type}`;
+            loginStatus.style.display = 'block';
+        }
+
+        // Show customer dashboard after login
+        function showCustomerDashboard() {
+            document.getElementById('customer-login-section').style.display = 'none';
+            document.getElementById('customer-dashboard').style.display = 'block';
+            
+            // Update nav bar to show logged in user
+            const navBar = document.querySelector('#customer-dashboard .nav-bar h2');
+            if (navBar) {
+                navBar.innerHTML = `Customer View <span class="user-indicator">${currentCustomer}</span>`;
+            }
+            
+            // Load purchase history and expiry alerts
+            loadCustomerData();
+        }
+
+        // Customer logout function
+        function customerLogout() {
+            currentCustomer = null;
+            localStorage.removeItem('currentCustomer');
+            
+            // Reset UI
+            document.getElementById('customer-dashboard').style.display = 'none';
+            document.getElementById('customer-login-section').style.display = 'block';
+            document.getElementById('customer-login-form').reset();
+            
+            const loginStatus = document.getElementById('customer-login-status');
+            loginStatus.style.display = 'none';
+        }
+
+        // ===== PURCHASE TRACKING SYSTEM =====
+        // Track customer purchases
+        async function trackCustomerPurchase(productId, productName) {
+            if (!currentCustomer) return;
+            
+            try {
+                // Get current data from server
+                const response = await fetch(API_URL + '/latest', {
+                    headers: {'X-Master-Key': SECRET_KEY}
+                });
+                
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                const serverData = data.record;
+                
+                // Initialize purchases object if it doesn't exist
+                if (!serverData.purchases) {
+                    serverData.purchases = {};
+                }
+                
+                // Initialize customer's purchase array if it doesn't exist
+                if (!serverData.purchases[currentCustomer]) {
+                    serverData.purchases[currentCustomer] = [];
+                }
+                
+                // Add new purchase
+                const purchaseRecord = {
+                    productId: productId,
+                    productName: productName,
+                    date: new Date().toISOString(),
+                    timestamp: Date.now()
+                };
+                
+                serverData.purchases[currentCustomer].push(purchaseRecord);
+                
+                // Save back to server
+                await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': SECRET_KEY
+                    },
+                    body: JSON.stringify(serverData)
+                });
+                
+            } catch (error) {
+                console.error('Error tracking purchase:', error);
+            }
+        }
+
+        // ===== PURCHASE HISTORY SECTION =====
+        // Add purchase history section to customer dashboard
+        function addPurchaseHistorySection() {
+            const customerDashboard = document.getElementById('customer-dashboard');
+            const existingContent = customerDashboard.innerHTML;
+            
+            const purchaseHistoryHTML = `
+                <div id="purchase-history-section" class="form-container">
+                    <h3>My Purchase History</h3>
+                    <div id="purchase-history-list">
+                        <!-- Purchase history will be loaded here -->
+                    </div>
+                </div>
+            `;
+            
+            // Insert purchase history after expiry alerts but before product list
+            const expiryAlerts = document.getElementById('customer-expiry-alerts');
+            if (expiryAlerts && expiryAlerts.parentNode) {
+                expiryAlerts.parentNode.insertAdjacentHTML('afterend', purchaseHistoryHTML);
+            }
+        }
+
+        // Load customer purchase history
+        async function loadPurchaseHistory() {
+            if (!currentCustomer) return;
+            
+            try {
+                const response = await fetch(API_URL + '/latest', {
+                    headers: {'X-Master-Key': SECRET_KEY}
+                });
+                
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                const purchases = data.record.purchases || {};
+                const customerPurchases = purchases[currentCustomer] || [];
+                
+                displayPurchaseHistory(customerPurchases);
+            } catch (error) {
+                console.error('Error loading purchase history:', error);
+            }
+        }
+
+        // Display purchase history
+        function displayPurchaseHistory(purchases) {
+            const historyList = document.getElementById('purchase-history-list');
+            if (!historyList) return;
+            
+            if (purchases.length === 0) {
+                historyList.innerHTML = '<p>No purchases yet.</p>';
+                return;
+            }
+            
+            // Sort purchases by date (newest first)
+            purchases.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let historyHTML = '<div class="product-list">';
+            
+            purchases.forEach(purchase => {
+                const purchaseDate = new Date(purchase.date).toLocaleString();
+                
+                historyHTML += `
+                    <div class="product-card">
+                        <h4>${purchase.productName}</h4>
+                        <p><strong>Product ID:</strong> ${purchase.productId}</p>
+                        <p><strong>Purchased:</strong> ${purchaseDate}</p>
+                    </div>
+                `;
+            });
+            
+            historyHTML += '</div>';
+            historyList.innerHTML = historyHTML;
+        }
+
+        // ===== ENHANCED EXPIRY ALERTS =====
+        // Update expiry alerts to show customer-specific warnings
+        function updateCustomerExpiryAlerts() {
+            const expiryAlerts = document.getElementById('customer-expiry-alerts');
+            if (!expiryAlerts) return;
+            
+            // Check for products expiring in the next 7 days
+            const today = new Date();
+            const sevenDaysFromNow = new Date(today);
+            sevenDaysFromNow.setDate(today.getDate() + 7);
+            
+            const expiringProducts = products.filter(product => {
+                const expiryDate = new Date(product.expiryDate);
+                return expiryDate <= sevenDaysFromNow && expiryDate >= today;
+            });
+            
+            if (expiringProducts.length > 0) {
+                let alertHTML = '<h3>⚠️ Products Nearing Expiry</h3>';
+                alertHTML += '<p>The following products will expire soon. Consider purchasing these first!</p>';
+                alertHTML += '<ul class="expiry-list">';
+                
+                expiringProducts.forEach(product => {
+                    const daysUntilExpiry = calculateDaysUntilExpiry(product.expiryDate);
+                    alertHTML += `<li>${product.name} - Expires in ${daysUntilExpiry} days</li>`;
+                });
+                
+                alertHTML += '</ul>';
+                expiryAlerts.innerHTML = alertHTML;
+                expiryAlerts.style.display = 'block';
+            } else {
+                expiryAlerts.style.display = 'none';
+            }
+        }
+
+        // ===== MODIFIED PURCHASE FUNCTION =====
+        // Update the existing purchase function to track customer purchases
+        const originalPurchaseProduct = purchaseProduct;
+        purchaseProduct = function(productId) {
+            if (!currentCustomer) {
+                showStatus('Please login first to make a purchase', 'error', 'customer');
+                return;
+            }
+            
+            // Find the product
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                showStatus('Product not found!', 'error', 'customer');
+                return;
+            }
+            
+            // Call original function
+            originalPurchaseProduct(productId);
+            
+            // Track the purchase
+            if (product.quantity > 0) {
+                trackCustomerPurchase(productId, product.name);
+            }
+        }
+
+        // ===== CUSTOMER DATA LOADING =====
+        // Load all customer-specific data
+        function loadCustomerData() {
+            loadPurchaseHistory();
+            updateCustomerExpiryAlerts();
+        }
+
+        // ===== INTEGRATION WITH EXISTING CODE =====
+        // Modify the existing logout function to handle customer logout
+        const originalLogout = logout;
+        logout = function() {
+            if (currentUser === 'customer' && currentCustomer) {
+                customerLogout();
+            }
+            originalLogout();
+        }
+
+        // Update the existing fetchProducts function to refresh customer data
+        const originalFetchProducts = fetchProducts;
+        fetchProducts = async function() {
+            await originalFetchProducts();
+            
+            if (currentUser === 'customer' && currentCustomer) {
+                loadCustomerData();
+            }
+        }
+
+        // ===== INITIALIZATION =====
+        // Initialize customer login system when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add a small delay to ensure existing DOM is ready
+            setTimeout(() => {
+                initializeCustomerLogin();
+                addPurchaseHistorySection();
+            }, 100);
+        });
+
+        // Update the existing purchaseProductFromServer function to work with new structure
+        const originalPurchaseProductFromServer = purchaseProductFromServer;
+        purchaseProductFromServer = async function(productId) {
+            await originalPurchaseProductFromServer(productId);
+            
+            // Refresh customer data after purchase
+            if (currentUser === 'customer' && currentCustomer) {
+                loadCustomerData();
+            }
+        }
+
+        // ...existing code...
+    
     </script>
 </body>
 </html>

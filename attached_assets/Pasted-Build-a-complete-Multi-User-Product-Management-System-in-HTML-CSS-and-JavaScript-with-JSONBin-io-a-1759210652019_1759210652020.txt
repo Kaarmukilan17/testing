@@ -1,0 +1,75 @@
+Build a complete Multi-User Product Management System in HTML, CSS, and JavaScript with JSONBin.io as the backend.
+
+🏗️ Core Architecture
+Real-time multi-user synchronization using JSONBin.io as backend
+Dual roles: Vendor and Customer with separate interfaces
+Responsive design (desktop + mobile)
+Persistent data storage with automatic synchronization
+🔐 Authentication & Security
+Vendor Access: direct login (no password for prototype)
+Customer Authentication:
+Predefined accounts (customer1/pass1, customer2/pass2, customer3/pass3)
+Login form with validation
+Persistent sessions using localStorage
+Individual purchase tracking per customer
+
+⚡ NEW FEATURE: Vendors can add new customers directly from their dashboard:
+
+Form fields: username + password
+New customers are saved into JSONBin under a customers object
+Newly added customers can immediately log in with their credentials
+Prevent duplicates (cannot add an existing username)
+🛍️ Vendor Features
+Add/edit/delete products with: ID, Name, Quantity, Expiry Date, Vendor Phone, Batch Number
+Real-time inventory updates
+Inventory monitoring with visual alerts (low stock, expiry)
+Expiry alerts for all store products (expired + expiring soon)
+🛒 Customer Features
+Browse all available products with real-time updates
+Purchase system: one-click purchase decrements quantity
+Personal purchase history (saved under their username in JSONBin)
+Personalized dashboard with purchase history and expiry alerts (only for products they bought)
+⚠️ Smart Alert System
+Vendor: all store-wide expiry alerts (expired + expiring soon)
+Customer: only expiry alerts for their purchased products
+🔄 Real-time Sync
+Poll JSONBin every 3 seconds for updates
+Multi-device support, consistent data sync
+Unified schema:
+{
+  "products": [...],
+  "purchases": { "customer1": [...], "customer2": [...] },
+  "customers": { "customer1": "pass1", "customer2": "pass2" }
+}
+
+📊 Data Management
+Products array for all items
+Purchases object for customer-specific history
+Customers object for authentication
+Always merge products + purchases + customers before saving back
+🎯 UX Features
+Status messages for success/error feedback
+Visual indicators:
+Red = expired
+Orange = expiring soon
+Gray = expired products
+Form validation for all inputs
+Loading states during API operations
+🔧 Setup
+Config panel for JSONBin.io Bin ID + Secret Key
+Connection testing before login
+Sample data initialization if empty
+🧪 Testing
+Pre-configured sample customers
+Vendor can create new customers
+Vendor adds products with different expiry dates
+Customers buy products → purchases + expiry alerts update in real-time
+📱 Responsive
+Grid layout for product cards
+Touch-friendly UI for mobile
+Deliverable:
+A single index.html file with embedded <style> and <script>, production-ready.
+Use the schema with products, purchases, and customers consistently.
+Ensure vendor can add new customers and customers can log in with those credentials immediately.
+
+Do you want me to also write the JSON schema update functions (so vendor adding new customers won’t overwrite products/purchases) as a ready-to-use snippet for you?

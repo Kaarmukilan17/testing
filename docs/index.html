@@ -5,317 +5,494 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-User Product Manager</title>
     <style>
-        /* Reset and base styles */
+        :root {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e3e8ef;
+            --text-primary: #2c3e50;
+            --text-secondary: #5a6c7d;
+            --border-color: #dde2e8;
+            --accent-primary: #3498db;
+            --accent-secondary: #2980b9;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --vendor-color: #e74c3c;
+            --customer-color: #27ae60;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1d23;
+            --bg-secondary: #25282e;
+            --bg-tertiary: #2f3339;
+            --text-primary: #e4e7eb;
+            --text-secondary: #9ca3af;
+            --border-color: #3f444d;
+            --accent-primary: #3498db;
+            --accent-secondary: #5dade2;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.5);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
         }
-        
+
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-        
-        /* Header styles */
+
         header {
-            background-color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 1rem 0;
+            padding: 1.5rem 0;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        
-        /* Login page styles */
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .login-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 70vh;
+            gap: 30px;
         }
-        
+
         .user-type-selector {
             display: flex;
             gap: 20px;
-            margin: 30px 0;
+            flex-wrap: wrap;
+            justify-content: center;
         }
-        
+
         .user-btn {
-            padding: 15px 30px;
+            padding: 20px 40px;
             font-size: 18px;
+            font-weight: 600;
             border: none;
-            border-radius: 5px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: #3498db;
-            color: white;
-            min-width: 150px;
+            transition: all 0.3s;
+            min-width: 180px;
+            box-shadow: var(--shadow-md);
         }
-        
+
         .user-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-lg);
         }
-        
+
         .vendor-btn {
-            background-color: #e74c3c;
+            background: linear-gradient(135deg, var(--vendor-color), #c0392b);
+            color: white;
         }
-        
+
         .customer-btn {
-            background-color: #2ecc71;
+            background: linear-gradient(135deg, var(--customer-color), #229954);
+            color: white;
         }
-        
-        /* Page styles (hidden by default) */
-        .page {
-            display: none;
-            animation: fadeIn 0.5s;
+
+        .card {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+
+        .card h3 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        /* Form styles */
-        .form-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
-        
+
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
         }
-        
-        input, select {
+
+        input, select, textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.3s;
         }
-        
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
         button {
-            padding: 10px 15px;
-            background-color: #3498db;
+            padding: 12px 24px;
+            background-color: var(--accent-primary);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
         }
-        
+
         button:hover {
-            background-color: #2980b9;
+            background-color: var(--accent-secondary);
+            transform: translateY(-1px);
         }
-        
-        /* Product list styles */
-        .product-list {
+
+        .btn-success { background-color: var(--success); }
+        .btn-warning { background-color: var(--warning); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-secondary { background-color: var(--text-secondary); }
+
+        .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
             margin-top: 20px;
         }
-        
+
         .product-card {
-            background-color: white;
-            border-radius: 5px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s;
             position: relative;
         }
-        
+
+        .product-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
         .product-card.expiring-soon {
-            border-left: 5px solid #e74c3c;
+            border-left: 5px solid var(--warning);
         }
-        
+
         .product-card.low-stock {
-            border-left: 5px solid #f39c12;
+            border-right: 5px solid var(--warning);
         }
-        
+
         .product-card.expired {
-            border-left: 5px solid #95a5a6;
+            border-left: 5px solid var(--danger);
             opacity: 0.7;
         }
-        
+
+        .product-card h4 {
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .product-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .product-info p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .product-info strong {
+            color: var(--text-primary);
+        }
+
         .product-actions {
             display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
+            gap: 10px;
+            margin-top: 16px;
         }
-        
-        .edit-btn {
-            background-color: #f39c12;
-        }
-        
-        .delete-btn {
-            background-color: #e74c3c;
-        }
-        
-        .purchase-btn {
-            background-color: #2ecc71;
-            width: 100%;
-        }
-        
-        /* Alert styles */
-        .alert {
+
+        .product-actions button {
+            flex: 1;
             padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-            font-weight: bold;
+            font-size: 14px;
         }
-        
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .alert-warning {
             background-color: #fff3cd;
             color: #856404;
             border: 1px solid #ffeaa7;
         }
-        
+
         .alert-danger {
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
-        .status-message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            text-align: center;
-        }
-        
-        .success {
+
+        .alert-success {
             background-color: #d4edda;
             color: #155724;
+            border: 1px solid #c3e6cb;
         }
-        
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
-        
-        /* Navigation */
+
+        [data-theme="dark"] .alert-warning {
+            background-color: #664d03;
+            color: #ffecb5;
+            border-color: #8a6d3b;
+        }
+
+        [data-theme="dark"] .alert-danger {
+            background-color: #58151c;
+            color: #f8b4b4;
+            border-color: #a94442;
+        }
+
+        [data-theme="dark"] .alert-success {
+            background-color: #0f5132;
+            color: #badbcc;
+            border-color: #3c763d;
+        }
+
+        [data-theme="dark"] .alert-info {
+            background-color: #055160;
+            color: #b6e3f4;
+            border-color: #31708f;
+        }
+
+        .status-message {
+            padding: 14px;
+            margin: 16px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .nav-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-color);
         }
-        
-        .logout-btn {
-            background-color: #95a5a6;
-        }
-        
-        /* Expiry alert section */
-        .expiry-section {
-            background-color: #fff8e1;
-            border-left: 5px solid #ffc107;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        
-        .expiry-section h3 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-        
-        .expiry-list {
-            list-style-type: none;
-        }
-        
-        .expiry-list li {
-            padding: 5px 0;
-            border-bottom: 1px dashed #ffeaa7;
-        }
-        
-        .expiry-list li:last-child {
-            border-bottom: none;
-        }
-        
-        /* Multi-user info panel */
-        .multi-user-panel {
-            background-color: #e3f2fd;
-            border: 1px solid #90caf9;
-            border-radius: 4px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        
-        .multi-user-panel h3 {
-            color: #1565c0;
-            margin-bottom: 10px;
-        }
-        
+
         .user-indicator {
-            display: inline-block;
-            background: #2196F3;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: 5px;
-        }
-        
-        /* Configuration panel */
-        .config-panel {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        
-        .config-panel h3 {
-            color: #495057;
-            margin-bottom: 10px;
-        }
-        
-        .config-input {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            display: inline-flex;
             align-items: center;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 12px;
         }
-        
-        .config-input input {
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background-color: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .tab-btn {
             flex: 1;
-            max-width: 300px;
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s;
         }
-        
-        /* Responsive adjustments */
+
+        .tab-btn.active {
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .qr-scanner-container {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #qr-reader {
+            max-width: 500px;
+            margin: 20px auto;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .purchase-history-item {
+            background-color: var(--bg-primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
         @media (max-width: 768px) {
+            .header-controls {
+                position: static;
+                justify-content: center;
+                margin-top: 16px;
+            }
+
             .user-type-selector {
                 flex-direction: column;
+                width: 100%;
+                max-width: 300px;
             }
-            
-            .product-list {
+
+            .product-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .config-input {
+
+            .tabs {
                 flex-direction: column;
-                align-items: flex-start;
+            }
+
+            .nav-bar {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
             }
         }
     </style>
@@ -323,125 +500,154 @@
 <body>
     <header>
         <h1>Multi-User Product Manager</h1>
-        <p>Real-time shared product management system</p>
+        <p>Real-time Firebase-powered product management</p>
+        <div class="header-controls">
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-text">Dark</span>
+            </button>
+        </div>
     </header>
-    
+
     <div class="container">
-        <!-- Login Page -->
         <div id="login-page" class="page">
             <div class="login-container">
                 <h2>Select User Type</h2>
-                <p>Choose your role to continue (no password required)</p>
+                <p style="color: var(--text-secondary);">Choose your role to continue</p>
                 
                 <div class="user-type-selector">
-                    <button class="user-btn vendor-btn" onclick="login('vendor')">Vendor Login</button>
-                    <button class="user-btn customer-btn" onclick="login('customer')">Customer Login</button>
+                    <button class="user-btn vendor-btn" onclick="login('vendor')">
+                        👨‍💼 Vendor Login
+                    </button>
+                    <button class="user-btn customer-btn" onclick="login('customer')">
+                        🛒 Customer Login
+                    </button>
                 </div>
-                
-                <div class="config-panel">
-                    <h3>JSONBin.io Configuration</h3>
-                    <p>Enter your JSONBin.io credentials to enable multi-user functionality:</p>
-                    <div class="config-input">
-                        <label for="bin-id">Bin ID:</label>
-                        <input type="text" id="bin-id" placeholder="Enter your bin ID">
+
+                <div class="card" style="max-width: 600px; width: 100%;">
+                    <h3>🔥 Firebase Status</h3>
+                    <div id="firebase-status" class="alert alert-info">
+                        <span>Initializing Firebase...</span>
                     </div>
-                    <div class="config-input">
-                        <label for="secret-key">Secret Key:</label>
-                        <input type="text" id="secret-key" placeholder="Enter your secret key">
-                    </div>
-                    <button onclick="saveConfig()">Save Configuration</button>
-                    <p id="config-status" style="margin-top: 10px;"></p>
-                </div>
-                
-                <div class="multi-user-panel">
-                    <h3>Multi-User Demo Instructions</h3>
-                    <p>1. Get a free account at <a href="https://jsonbin.io" target="_blank">jsonbin.io</a></p>
-                    <p>2. Create a new bin and copy the Bin ID and Secret Key</p>
-                    <p>3. Enter your credentials above and save</p>
-                    <p>4. Open this page in multiple browsers/tabs/devices</p>
-                    <p>5. Login as Vendor in one and Customer in another</p>
-                    <p>6. Add products as Vendor - they'll appear for all users</p>
-                    <p>7. Purchase products as Customer - quantities update for everyone</p>
                 </div>
             </div>
         </div>
-        
-        <!-- Vendor Page -->
+
         <div id="vendor-page" class="page">
             <div class="nav-bar">
-                <h2>Vendor Dashboard <span class="user-indicator">Vendor</span></h2>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+                <h2>Vendor Dashboard <span class="user-indicator">👨‍💼 Vendor</span></h2>
+                <button class="btn-secondary" onclick="logout()">Logout</button>
             </div>
-            
+
             <div id="vendor-status" class="status-message" style="display: none;"></div>
-            
-            <div class="form-container">
-                <h3>Add New Product</h3>
-                <form id="product-form">
-                    <div class="form-group">
-                        <label for="product-id">Product ID</label>
-                        <input type="text" id="product-id" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="product-name">Product Name</label>
-                        <input type="text" id="product-name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="product-quantity">Quantity</label>
-                        <input type="number" id="product-quantity" min="0" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="expiry-date">Expiry Date</label>
-                        <input type="date" id="expiry-date" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="vendor-phone">Vendor Phone</label>
-                        <input type="tel" id="vendor-phone" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="batch-number">Batch Number</label>
-                        <input type="text" id="batch-number" required>
-                    </div>
-                    
-                    <button type="submit">Add Product</button>
-                </form>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchVendorTab('products')">📦 Products</button>
+                <button class="tab-btn" onclick="switchVendorTab('customers')">👥 Customers</button>
+                <button class="tab-btn" onclick="switchVendorTab('analytics')">📊 Analytics</button>
             </div>
-            
-            <div>
-                <h3>Product List</h3>
-                <p>Total Products: <span id="product-count">0</span></p>
-                
-                <!-- Expiry alerts section -->
-                <div id="vendor-expiry-alerts" class="expiry-section" style="display: none;">
-                    <h3>⚠️ Expiry Alerts</h3>
-                    <ul id="vendor-expiry-list" class="expiry-list">
-                        <!-- Expiry alerts will be inserted here -->
-                    </ul>
+
+            <div id="vendor-products-tab" class="tab-content active">
+                <div class="card">
+                    <h3>➕ Add New Product</h3>
+                    <form id="product-form">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                            <div class="form-group">
+                                <label for="product-id">Product ID</label>
+                                <input type="text" id="product-id" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="product-name">Product Name</label>
+                                <input type="text" id="product-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="product-quantity">Quantity</label>
+                                <input type="number" id="product-quantity" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expiry-date">Expiry Date</label>
+                                <input type="date" id="expiry-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vendor-phone">Vendor Phone</label>
+                                <input type="tel" id="vendor-phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="batch-number">Batch Number</label>
+                                <input type="text" id="batch-number" required>
+                            </div>
+                        </div>
+                        <button type="submit" id="product-submit-btn" style="margin-top: 16px;">Add Product</button>
+                    </form>
                 </div>
-                
-                <div id="vendor-product-list" class="product-list">
-                    <!-- Product cards will be inserted here by JavaScript -->
+
+                <div id="vendor-expiry-alerts"></div>
+
+                <div class="card">
+                    <h3>📦 Product Inventory</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                        Total Products: <strong id="product-count">0</strong>
+                    </p>
+                    <div id="vendor-product-list" class="product-grid"></div>
+                </div>
+            </div>
+
+            <div id="vendor-customers-tab" class="tab-content">
+                <div class="card">
+                    <h3>➕ Add New Customer</h3>
+                    <form id="add-customer-form">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label for="new-customer-username">Username</label>
+                                <input type="text" id="new-customer-username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-customer-password">Password</label>
+                                <input type="password" id="new-customer-password" required>
+                            </div>
+                        </div>
+                        <button type="submit">Add Customer</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>👥 Customer List</h3>
+                    <div id="customer-list"></div>
+                </div>
+            </div>
+
+            <div id="vendor-analytics-tab" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Total Products</h4>
+                        <div class="stat-value" id="stat-products">0</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, var(--success), #229954);">
+                        <h4>Total Customers</h4>
+                        <div class="stat-value" id="stat-customers">0</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, var(--warning), #e67e22);">
+                        <h4>Low Stock Items</h4>
+                        <div class="stat-value" id="stat-low-stock">0</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, var(--danger), #c0392b);">
+                        <h4>Expiring Soon</h4>
+                        <div class="stat-value" id="stat-expiring">0</div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Customer Page -->
+
         <div id="customer-page" class="page">
             <div class="nav-bar">
-                <h2>Customer View <span class="user-indicator">Customer</span></h2>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+                <h2>Customer View <span class="user-indicator">🛒 Customer</span></h2>
+                <button class="btn-secondary" onclick="logout()">Logout</button>
             </div>
-            
+
             <div id="customer-status" class="status-message" style="display: none;"></div>
-            
-            <!-- Customer Login Section -->
-            <div id="customer-login-section" class="form-container">
-                <h3>Customer Login</h3>
+
+            <div id="customer-login-section" class="card">
+                <h3>🔐 Customer Login</h3>
                 <form id="customer-login-form">
                     <div class="form-group">
                         <label for="customer-username">Username</label>
@@ -453,210 +659,215 @@
                     </div>
                     <button type="submit">Login</button>
                 </form>
-                <div id="customer-login-status" class="status-message" style="display: none; margin-top: 10px;"></div>
             </div>
-            
+
             <div id="customer-dashboard" style="display: none;">
-                <!-- Expiry alerts for customer -->
-                <div id="customer-expiry-alerts" class="expiry-section" style="display: none;">
-                    <h3>⚠️ Your Purchases Nearing Expiry</h3>
-                    <p>These products you purchased will expire soon:</p>
-                    <ul id="customer-expiry-list" class="expiry-list">
-                        <!-- Expiry alerts will be inserted here -->
-                    </ul>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchCustomerTab('products')">🛍️ Products</button>
+                    <button class="tab-btn" onclick="switchCustomerTab('qr')">📷 QR Scanner</button>
+                    <button class="tab-btn" onclick="switchCustomerTab('history')">📜 History</button>
                 </div>
-                
-                <!-- Purchase History Section -->
-                <div id="purchase-history-section" class="form-container">
-                    <h3>My Purchase History</h3>
-                    <div id="purchase-history-list">
-                        <!-- Purchase history will be loaded here -->
+
+                <div id="customer-products-tab" class="tab-content active">
+                    <div id="customer-expiry-alerts"></div>
+
+                    <div class="card">
+                        <h3>🛍️ Available Products</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                            Total Products: <strong id="customer-product-count">0</strong>
+                        </p>
+                        <div id="customer-product-list" class="product-grid"></div>
                     </div>
                 </div>
-                
-                <div>
-                    <h3>Available Products</h3>
-                    <p>Total Products: <span id="customer-product-count">0</span></p>
-                    <div id="customer-product-list" class="product-list">
-                        <!-- Product cards will be inserted here by JavaScript -->
+
+                <div id="customer-qr-tab" class="tab-content">
+                    <div class="card">
+                        <h3>📷 Scan Product QR Code</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                            Scan a product QR code to quickly purchase
+                        </p>
+                        <div class="qr-scanner-container">
+                            <div id="qr-reader"></div>
+                            <button onclick="toggleQRScanner()" id="qr-toggle-btn">Start Scanner</button>
+                        </div>
+                        <div id="qr-result" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+
+                <div id="customer-history-tab" class="tab-content">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3>📜 My Purchase History</h3>
+                            <button onclick="exportPurchaseHistory()" class="btn-success">
+                                📥 Export CSV
+                            </button>
+                        </div>
+                        <div id="purchase-history-list"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // CONFIG: replace with your bin ID and JSONBin secret key
-        let BIN_ID = localStorage.getItem('jsonbin_bin_id') || "enter";
-        let SECRET_KEY = localStorage.getItem('jsonbin_secret_key') || "enter.";
-        let API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-        
-        // Global variables
-        let currentUser = null;
-        let products = [];
-        let updateInterval;
-        
-        // Predefined customers
-        const customers = {
-            customer1: "pass1",
-            customer2: "pass2", 
-            customer3: "pass3"
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, onValue, update, remove, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "{{FIREBASE_API_KEY}}",
+            authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
+            databaseURL: "{{FIREBASE_DATABASE_URL}}",
+            projectId: "{{FIREBASE_PROJECT_ID}}",
+            storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
+            messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
+            appId: "{{FIREBASE_APP_ID}}"
         };
-        
-        // Customer login state
-        let currentCustomer = localStorage.getItem('currentCustomer') || null;
-        
-        // DOM elements
-        const loginPage = document.getElementById('login-page');
-        const vendorPage = document.getElementById('vendor-page');
-        const customerPage = document.getElementById('customer-page');
-        const productForm = document.getElementById('product-form');
-        const vendorProductList = document.getElementById('vendor-product-list');
-        const customerProductList = document.getElementById('customer-product-list');
-        const vendorStatus = document.getElementById('vendor-status');
-        const customerStatus = document.getElementById('customer-status');
-        const vendorExpiryAlerts = document.getElementById('vendor-expiry-alerts');
-        const vendorExpiryList = document.getElementById('vendor-expiry-list');
-        const customerExpiryAlerts = document.getElementById('customer-expiry-alerts');
-        const customerExpiryList = document.getElementById('customer-expiry-list');
-        const productCount = document.getElementById('product-count');
-        const customerProductCount = document.getElementById('customer-product-count');
-        const binIdInput = document.getElementById('bin-id');
-        const secretKeyInput = document.getElementById('secret-key');
-        const configStatus = document.getElementById('config-status');
-        const customerLoginForm = document.getElementById('customer-login-form');
-        const customerLoginStatus = document.getElementById('customer-login-status');
-        
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
-            showPage('login-page');
-            
-            // Load saved configuration
-            binIdInput.value = BIN_ID === "enter" ? "" : BIN_ID;
-            secretKeyInput.value = SECRET_KEY === "enter." ? "" : SECRET_KEY;
-            
-            // Add form submission handlers
-            productForm.addEventListener('submit', handleProductSubmit);
-            customerLoginForm.addEventListener('submit', handleCustomerLogin);
-            
-            // Start polling for updates (every 3 seconds)
-            updateInterval = setInterval(fetchProducts, 3000);
-            
-            // Load initial products if configuration is set
-            if (BIN_ID !== "enter" && SECRET_KEY !== "enter.") {
-                fetchProducts();
-            }
-            
-            // Check if customer is already logged in
-            if (currentCustomer) {
-                showCustomerDashboard();
-            }
-        });
-        
-        // Save JSONBin.io configuration
-        function saveConfig() {
-            const binId = binIdInput.value.trim();
-            const secretKey = secretKeyInput.value.trim();
-            
-            if (!binId || !secretKey) {
-                configStatus.textContent = "Please enter both Bin ID and Secret Key";
-                configStatus.style.color = "#e74c3c";
-                return;
-            }
-            
-            // Save to localStorage
-            localStorage.setItem('jsonbin_bin_id', binId);
-            localStorage.setItem('jsonbin_secret_key', secretKey);
-            
-            // Update global variables
-            BIN_ID = binId;
-            SECRET_KEY = secretKey;
-            API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-            
-            configStatus.textContent = "Configuration saved successfully!";
-            configStatus.style.color = "#2ecc71";
-            
-            // Test the connection
-            testConnection();
-        }
-        
-        // Test JSONBin.io connection
-        async function testConnection() {
-            try {
-                const response = await fetch(API_URL + '/latest', {
-                    headers: {'X-Master-Key': SECRET_KEY}
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        window.db = database;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbGet = get;
+        window.dbOnValue = onValue;
+        window.dbUpdate = update;
+        window.dbRemove = remove;
+        window.dbPush = push;
+
+        const firebaseStatus = document.getElementById('firebase-status');
+        firebaseStatus.className = 'alert alert-success';
+        firebaseStatus.innerHTML = '<span>✅ Firebase connected successfully!</span>';
+
+        window.initializeDefaultCustomers = async function() {
+            const customersRef = ref(database, 'customers');
+            const snapshot = await get(customersRef);
+            if (!snapshot.exists()) {
+                await set(customersRef, {
+                    customer1: "pass1",
+                    customer2: "pass2",
+                    customer3: "pass3"
                 });
-                
-                if (response.ok) {
-                    configStatus.textContent = "Connection successful! You can now login.";
-                    configStatus.style.color = "#2ecc71";
-                    
-                    // Load products
-                    fetchProducts();
-                } else {
-                    configStatus.textContent = "Connection failed. Please check your credentials.";
-                    configStatus.style.color = "#e74c3c";
-                }
-            } catch (error) {
-                configStatus.textContent = "Connection error. Please check your credentials.";
-                configStatus.style.color = "#e74c3c";
             }
+        };
+
+        initializeDefaultCustomers();
+    </script>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <script>
+        let currentUser = null;
+        let currentCustomer = localStorage.getItem('currentCustomer') || null;
+        let products = [];
+        let customers = {};
+        let purchases = {};
+        let unsubscribeProducts = null;
+        let unsubscribeCustomers = null;
+        let unsubscribePurchases = null;
+        let qrScanner = null;
+        let isScannerActive = false;
+
+        const DOM = {
+            loginPage: document.getElementById('login-page'),
+            vendorPage: document.getElementById('vendor-page'),
+            customerPage: document.getElementById('customer-page'),
+            productForm: document.getElementById('product-form'),
+            vendorProductList: document.getElementById('vendor-product-list'),
+            customerProductList: document.getElementById('customer-product-list'),
+            vendorStatus: document.getElementById('vendor-status'),
+            customerStatus: document.getElementById('customer-status'),
+            customerLoginForm: document.getElementById('customer-login-form'),
+            customerDashboard: document.getElementById('customer-dashboard'),
+            customerLoginSection: document.getElementById('customer-login-section'),
+            addCustomerForm: document.getElementById('add-customer-form'),
+            customerList: document.getElementById('customer-list'),
+            purchaseHistoryList: document.getElementById('purchase-history-list')
+        };
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
         }
-        
-        // Show a specific page and hide others
+
+        window.toggleTheme = function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+        };
+
+        function updateThemeButton(theme) {
+            document.getElementById('theme-icon').textContent = theme === 'dark' ? '☀️' : '🌙';
+            document.getElementById('theme-text').textContent = theme === 'dark' ? 'Light' : 'Dark';
+        }
+
         function showPage(pageId) {
-            // Hide all pages
-            loginPage.style.display = 'none';
-            vendorPage.style.display = 'none';
-            customerPage.style.display = 'none';
-            
-            // Show the requested page
+            DOM.loginPage.style.display = 'none';
+            DOM.vendorPage.style.display = 'none';
+            DOM.customerPage.style.display = 'none';
             document.getElementById(pageId).style.display = 'block';
         }
-        
-        // Handle user login
-        function login(userType) {
-            // Check if configuration is set
-            if (BIN_ID === "enter" || SECRET_KEY === "enter.") {
-                configStatus.textContent = "Please configure JSONBin.io credentials first";
-                configStatus.style.color = "#e74c3c";
-                return;
-            }
-            
+
+        window.login = function(userType) {
             currentUser = userType;
-            
             if (userType === 'vendor') {
                 showPage('vendor-page');
+                setupFirebaseListeners();
             } else if (userType === 'customer') {
                 showPage('customer-page');
+                if (currentCustomer) {
+                    showCustomerDashboard();
+                }
             }
-            
-            // Fetch products immediately after login
-            fetchProducts();
-        }
-        
-        // Handle user logout
-        function logout() {
-            if (currentUser === 'customer' && currentCustomer) {
-                customerLogout();
-            }
+        };
+
+        window.logout = function() {
             currentUser = null;
+            currentCustomer = null;
+            localStorage.removeItem('currentCustomer');
+            
+            if (unsubscribeProducts) unsubscribeProducts();
+            if (unsubscribeCustomers) unsubscribeCustomers();
+            if (unsubscribePurchases) unsubscribePurchases();
+            
+            DOM.customerDashboard.style.display = 'none';
+            DOM.customerLoginSection.style.display = 'block';
+            
             showPage('login-page');
-            clearStatusMessages();
+        };
+
+        function setupFirebaseListeners() {
+            const productsRef = window.dbRef(window.db, 'products');
+            unsubscribeProducts = window.dbOnValue(productsRef, (snapshot) => {
+                const data = snapshot.val();
+                products = data ? Object.values(data) : [];
+                renderProductLists();
+                checkExpiryAlerts();
+                updateAnalytics();
+            });
+
+            const customersRef = window.dbRef(window.db, 'customers');
+            unsubscribeCustomers = window.dbOnValue(customersRef, (snapshot) => {
+                customers = snapshot.val() || {};
+                renderCustomerList();
+                updateAnalytics();
+            });
+
+            const purchasesRef = window.dbRef(window.db, 'purchases');
+            unsubscribePurchases = window.dbOnValue(purchasesRef, (snapshot) => {
+                purchases = snapshot.val() || {};
+                if (currentCustomer) {
+                    loadCustomerData();
+                }
+            });
         }
-        
-        // Handle product form submission
-        function handleProductSubmit(e) {
+
+        DOM.productForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Check if configuration is set
-            if (BIN_ID === "enter" || SECRET_KEY === "enter.") {
-                showStatus('Please configure JSONBin.io credentials first', 'error', 'vendor');
-                return;
-            }
-            
-            // Get form values
-            const productData = {
+            const product = {
                 id: document.getElementById('product-id').value,
                 name: document.getElementById('product-name').value,
                 quantity: parseInt(document.getElementById('product-quantity').value),
@@ -666,444 +877,93 @@
                 addedBy: 'Vendor',
                 addedAt: new Date().toISOString()
             };
-            
-            // Send product data to server
-            addProductToServer(productData);
-            
-            // Reset form
-            productForm.reset();
-        }
-        
-        // ===== UPDATED FUNCTIONS WITH CONSISTENT SCHEMA =====
-        
-        // Add product to JSONBin with consistent schema
-        async function addProductToServer(productData) {
+
             try {
-                // Get current full data from server
-                const fullData = await fetchFullDataFromServer();
+                const productRef = window.dbRef(window.db, `products/${product.id}`);
+                await window.dbSet(productRef, product);
                 
-                // Update products array
-                const existingIndex = fullData.products.findIndex(p => p.id === productData.id);
-                
-                if (existingIndex !== -1) {
-                    fullData.products[existingIndex] = productData;
-                    showStatus('Product updated successfully!', 'success', 'vendor');
-                } else {
-                    fullData.products.push(productData);
-                    showStatus('Product added successfully!', 'success', 'vendor');
-                }
-                
-                // Save full data back to server
-                await saveFullDataToServer(fullData);
-                
-                // Update local products and UI
-                products = fullData.products;
-                renderProductLists();
-                checkExpiryAlerts();
-                
+                showStatus('Product saved successfully!', 'alert-success', 'vendor');
+                DOM.productForm.reset();
+                document.getElementById('product-submit-btn').textContent = 'Add Product';
             } catch (error) {
-                console.error('Error adding product:', error);
-                showStatus('Error adding product. Please try again.', 'error', 'vendor');
+                showStatus('Error saving product: ' + error.message, 'alert-danger', 'vendor');
             }
-        }
-        
-        // Delete product from server with consistent schema
-        async function deleteProductFromServer(productId) {
-            try {
-                // Get current full data from server
-                const fullData = await fetchFullDataFromServer();
-                
-                // Filter out the product to delete
-                fullData.products = fullData.products.filter(p => p.id !== productId);
-                
-                // Save full data back to server
-                await saveFullDataToServer(fullData);
-                
-                // Update local products and UI
-                products = fullData.products;
-                renderProductLists();
-                checkExpiryAlerts();
-                
-                showStatus('Product deleted successfully!', 'success', 'vendor');
-                
-            } catch (error) {
-                console.error('Error deleting product:', error);
-                showStatus('Error deleting product. Please try again.', 'error', 'vendor');
-            }
-        }
-        
-        // Purchase product with consistent schema
-        async function purchaseProductFromServer(productId) {
-            try {
-                // Get current full data from server
-                const fullData = await fetchFullDataFromServer();
-                
-                // Find the product
-                const productIndex = fullData.products.findIndex(p => p.id === productId);
-                
-                if (productIndex === -1) {
-                    showStatus('Product not found!', 'error', 'customer');
-                    return;
-                }
-                
-                if (fullData.products[productIndex].quantity > 0) {
-                    // Decrement quantity
-                    fullData.products[productIndex].quantity -= 1;
-                    
-                    // Save full data back to server
-                    await saveFullDataToServer(fullData);
-                    
-                    // Update local products and UI
-                    products = fullData.products;
-                    renderProductLists();
-                    checkExpiryAlerts();
-                    
-                    showStatus('Product purchased successfully!', 'success', 'customer');
-                } else {
-                    showStatus('Product is out of stock!', 'error', 'customer');
-                }
-                
-            } catch (error) {
-                console.error('Error purchasing product:', error);
-                showStatus('Error purchasing product. Please try again.', 'error', 'customer');
-            }
-        }
-        
-        // Fetch products and update UI with consistent schema
-        async function fetchProducts() {
-            // Don't fetch if configuration is not set
-            if (BIN_ID === "enter" || SECRET_KEY === "enter.") {
-                return;
-            }
-            
-            try {
-                const fullData = await fetchFullDataFromServer();
-                
-                // Only update if products have changed
-                if (JSON.stringify(fullData.products) !== JSON.stringify(products)) {
-                    products = fullData.products;
-                    renderProductLists();
-                    checkExpiryAlerts();
-                }
-                
-                // Refresh customer data if logged in
-                if (currentUser === 'customer' && currentCustomer) {
-                    loadCustomerData();
-                }
-            } catch (error) {
-                console.error('Error in fetchProducts:', error);
-            }
-        }
-        
-        // ===== CUSTOMER LOGIN SYSTEM =====
-        
-        // Handle customer login
-        function handleCustomerLogin(e) {
+        });
+
+        DOM.addCustomerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('customer-username').value.trim();
-            const password = document.getElementById('customer-password').value;
-            
-            if (!username || !password) {
-                showLoginStatus('Please enter both username and password', 'error');
+            const username = document.getElementById('new-customer-username').value;
+            const password = document.getElementById('new-customer-password').value;
+
+            if (customers[username]) {
+                showStatus('Customer username already exists!', 'alert-warning', 'vendor');
                 return;
             }
+
+            try {
+                const customerRef = window.dbRef(window.db, `customers/${username}`);
+                await window.dbSet(customerRef, password);
+                
+                showStatus('Customer added successfully!', 'alert-success', 'vendor');
+                DOM.addCustomerForm.reset();
+            } catch (error) {
+                showStatus('Error adding customer: ' + error.message, 'alert-danger', 'vendor');
+            }
+        });
+
+        DOM.customerLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            if (customers[username] && customers[username] === password) {
-                // Successful login
+            const username = document.getElementById('customer-username').value;
+            const password = document.getElementById('customer-password').value;
+
+            const customersRef = window.dbRef(window.db, 'customers');
+            const snapshot = await window.dbGet(customersRef);
+            const customersData = snapshot.val() || {};
+
+            if (customersData[username] && customersData[username] === password) {
                 currentCustomer = username;
                 localStorage.setItem('currentCustomer', username);
-                showLoginStatus('Login successful!', 'success');
-                
-                // Show dashboard after a brief delay
-                setTimeout(() => {
-                    showCustomerDashboard();
-                }, 1000);
+                showCustomerDashboard();
+                setupFirebaseListeners();
+                showStatus('Login successful!', 'alert-success', 'customer');
             } else {
-                // Failed login
-                showLoginStatus('Invalid username or password', 'error');
+                showStatus('Invalid credentials!', 'alert-danger', 'customer');
             }
-        }
-        
-        // Show login status message
-        function showLoginStatus(message, type) {
-            customerLoginStatus.textContent = message;
-            customerLoginStatus.className = `status-message ${type}`;
-            customerLoginStatus.style.display = 'block';
-        }
-        
-        // Show customer dashboard after login
+        });
+
         function showCustomerDashboard() {
-            document.getElementById('customer-login-section').style.display = 'none';
-            document.getElementById('customer-dashboard').style.display = 'block';
-            
-            // Update nav bar to show logged in user
-            const navBar = document.querySelector('#customer-dashboard .nav-bar h2');
-            if (navBar) {
-                navBar.innerHTML = `Customer View <span class="user-indicator">${currentCustomer}</span>`;
-            }
-            
-            // Load purchase history and expiry alerts
+            DOM.customerLoginSection.style.display = 'none';
+            DOM.customerDashboard.style.display = 'block';
             loadCustomerData();
         }
-        
-        // Customer logout function
-        function customerLogout() {
-            currentCustomer = null;
-            localStorage.removeItem('currentCustomer');
+
+        function renderProductLists() {
+            document.getElementById('product-count').textContent = products.length;
+            document.getElementById('customer-product-count').textContent = products.length;
             
-            // Reset UI
-            document.getElementById('customer-dashboard').style.display = 'none';
-            document.getElementById('customer-login-section').style.display = 'block';
-            document.getElementById('customer-login-form').reset();
-            
-            customerLoginStatus.style.display = 'none';
-        }
-        
-        // ===== PURCHASE TRACKING SYSTEM =====
-        
-        // Track customer purchases with consistent schema
-        async function trackCustomerPurchase(productId, productName) {
-            if (!currentCustomer) return;
-            
-            try {
-                // Get current full data from server
-                const fullData = await fetchFullDataFromServer();
-                
-                // Initialize purchases object if it doesn't exist
-                if (!fullData.purchases) {
-                    fullData.purchases = {};
-                }
-                
-                // Initialize customer's purchase array if it doesn't exist
-                if (!fullData.purchases[currentCustomer]) {
-                    fullData.purchases[currentCustomer] = [];
-                }
-                
-                // Add new purchase
-                const purchaseRecord = {
-                    productId: productId,
-                    productName: productName,
-                    date: new Date().toISOString(),
-                    timestamp: Date.now()
-                };
-                
-                fullData.purchases[currentCustomer].push(purchaseRecord);
-                
-                // Save full data back to server
-                await saveFullDataToServer(fullData);
-                
-            } catch (error) {
-                console.error('Error tracking purchase:', error);
-            }
-        }
-        
-        // ===== PURCHASE HISTORY =====
-        
-        // Load customer purchase history
-        async function loadPurchaseHistory() {
-            if (!currentCustomer) return;
-            
-            try {
-                const fullData = await fetchFullDataFromServer();
-                const purchases = fullData.purchases || {};
-                const customerPurchases = purchases[currentCustomer] || [];
-                
-                displayPurchaseHistory(customerPurchases);
-            } catch (error) {
-                console.error('Error loading purchase history:', error);
-            }
-        }
-        
-        // Display purchase history
-        function displayPurchaseHistory(purchases) {
-            const historyList = document.getElementById('purchase-history-list');
-            if (!historyList) return;
-            
-            if (purchases.length === 0) {
-                historyList.innerHTML = '<p>No purchases yet.</p>';
+            DOM.vendorProductList.innerHTML = '';
+            DOM.customerProductList.innerHTML = '';
+
+            if (products.length === 0) {
+                DOM.vendorProductList.innerHTML = '<p style="color: var(--text-secondary);">No products available. Add some to get started.</p>';
+                DOM.customerProductList.innerHTML = '<p style="color: var(--text-secondary);">No products available.</p>';
                 return;
             }
-            
-            // Sort purchases by date (newest first)
-            purchases.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            let historyHTML = '<div class="product-list">';
-            
-            purchases.forEach(purchase => {
-                const purchaseDate = new Date(purchase.date).toLocaleString();
-                
-                historyHTML += `
-                    <div class="product-card">
-                        <h4>${purchase.productName}</h4>
-                        <p><strong>Product ID:</strong> ${purchase.productId}</p>
-                        <p><strong>Purchased:</strong> ${purchaseDate}</p>
-                    </div>
-                `;
-            });
-            
-            historyHTML += '</div>';
-            historyList.innerHTML = historyHTML;
-        }
-        
-        // ===== ENHANCED EXPIRY ALERTS =====
-        
-        // Load customer's purchase history for expiry alerts
-        async function loadCustomerPurchaseHistory() {
-            if (!currentCustomer) return [];
-            
-            try {
-                const fullData = await fetchFullDataFromServer();
-                return fullData.purchases[currentCustomer] || [];
-            } catch (error) {
-                console.error('Error loading purchase history:', error);
-                return [];
-            }
-        }
-        
-        // Update expiry alerts to show only customer's purchased products
-        function updateCustomerExpiryAlerts() {
-            const expiryAlerts = document.getElementById('customer-expiry-alerts');
-            if (!expiryAlerts || !currentCustomer) return;
-            
-            // Load customer's purchase history
-            loadCustomerPurchaseHistory().then(customerPurchases => {
-                if (!customerPurchases || customerPurchases.length === 0) {
-                    expiryAlerts.style.display = 'none';
-                    return;
-                }
-                
-                // Get product IDs that customer has purchased
-                const purchasedProductIds = customerPurchases.map(p => p.productId);
-                
-                // Filter products to only those purchased by customer
-                const customerProducts = products.filter(product => 
-                    purchasedProductIds.includes(product.id)
-                );
-                
-                // Check for products expiring in the next 7 days
-                const today = new Date();
-                const sevenDaysFromNow = new Date(today);
-                sevenDaysFromNow.setDate(today.getDate() + 7);
-                
-                const expiringProducts = customerProducts.filter(product => {
-                    const expiryDate = new Date(product.expiryDate);
-                    return expiryDate <= sevenDaysFromNow && expiryDate >= today;
-                });
-                
-                if (expiringProducts.length > 0) {
-                    let alertHTML = '<h3>⚠️ Your Purchases Nearing Expiry</h3>';
-                    alertHTML += '<p>These products you purchased will expire soon:</p>';
-                    alertHTML += '<ul class="expiry-list">';
-                    
-                    expiringProducts.forEach(product => {
-                        const daysUntilExpiry = calculateDaysUntilExpiry(product.expiryDate);
-                        alertHTML += `<li><strong>${product.name}</strong> - Expires in ${daysUntilExpiry} days</li>`;
-                    });
-                    
-                    alertHTML += '</ul>';
-                    expiryAlerts.innerHTML = alertHTML;
-                    expiryAlerts.style.display = 'block';
-                } else {
-                    expiryAlerts.style.display = 'none';
-                }
-            });
-        }
-        
-        // ===== CUSTOMER DATA LOADING =====
-        
-        // Load all customer-specific data
-        function loadCustomerData() {
-            loadPurchaseHistory();
-            updateCustomerExpiryAlerts();
-        }
-        
-        // ===== CORE APPLICATION FUNCTIONS =====
-        
-        // New function to fetch full data schema
-        async function fetchFullDataFromServer() {
-            try {
-                const response = await fetch(API_URL + '/latest', {
-                    headers: {'X-Master-Key': SECRET_KEY}
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                // Ensure consistent schema
-                return {
-                    products: data.record.products || [],
-                    purchases: data.record.purchases || {}
-                };
-            } catch (error) {
-                console.error('Error fetching full data:', error);
-                // Return default schema if error
-                return { products: [], purchases: {} };
-            }
-        }
-        
-        // New function to save full data schema
-        async function saveFullDataToServer(fullData) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': SECRET_KEY
-                    },
-                    body: JSON.stringify(fullData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('Error saving full data:', error);
-                throw error;
-            }
-        }
-        
-        // Render product lists for both vendor and customer views
-        function renderProductLists() {
-            // Update product counts
-            productCount.textContent = products.length;
-            customerProductCount.textContent = products.length;
-            
-            // Clear existing product lists
-            vendorProductList.innerHTML = '';
-            customerProductList.innerHTML = '';
-            
-            // Render products for vendor view
+
             products.forEach(product => {
-                // Create product card for vendor
-                const vendorCard = createProductCard(product, 'vendor');
-                vendorProductList.appendChild(vendorCard);
-                
-                // Create product card for customer
-                const customerCard = createProductCard(product, 'customer');
-                customerProductList.appendChild(customerCard);
+                DOM.vendorProductList.appendChild(createProductCard(product, 'vendor'));
+                DOM.customerProductList.appendChild(createProductCard(product, 'customer'));
             });
-            
-            // Show message if no products
-            if (products.length === 0) {
-                vendorProductList.innerHTML = '<p>No products available. Add some products to get started.</p>';
-                customerProductList.innerHTML = '<p>No products available at the moment.</p>';
-            }
         }
-        
-        // Create a product card element
+
         function createProductCard(product, userType) {
             const card = document.createElement('div');
             card.className = 'product-card';
             
-            // Calculate days until expiry
             const daysUntilExpiry = calculateDaysUntilExpiry(product.expiryDate);
             
-            // Add warning classes based on product status
             if (daysUntilExpiry < 0) {
                 card.classList.add('expired');
             } else if (daysUntilExpiry <= 7) {
@@ -1113,141 +973,60 @@
             if (product.quantity < 10) {
                 card.classList.add('low-stock');
             }
-            
-            // Format the expiry date for display
-            const expiryDate = new Date(product.expiryDate);
-            const formattedExpiry = expiryDate.toLocaleDateString();
-            
-            // Create card content based on user type
+
+            const expiryDate = new Date(product.expiryDate).toLocaleDateString();
+
             if (userType === 'vendor') {
                 card.innerHTML = `
-                    <h4>${product.name} (ID: ${product.id})</h4>
-                    <p><strong>Quantity:</strong> ${product.quantity}</p>
-                    <p><strong>Expiry Date:</strong> ${formattedExpiry}</p>
-                    <p><strong>Days until expiry:</strong> ${daysUntilExpiry}</p>
-                    <p><strong>Vendor Phone:</strong> ${product.vendorPhone}</p>
-                    <p><strong>Batch Number:</strong> ${product.batchNumber}</p>
-                    <p><small>Added by: ${product.addedBy} on ${new Date(product.addedAt).toLocaleDateString()}</small></p>
+                    <h4>${product.name}</h4>
+                    <div class="product-info">
+                        <p><strong>ID:</strong> ${product.id}</p>
+                        <p><strong>Quantity:</strong> ${product.quantity}</p>
+                        <p><strong>Expiry:</strong> ${expiryDate} <span style="color: ${daysUntilExpiry < 0 ? 'var(--danger)' : daysUntilExpiry <= 7 ? 'var(--warning)' : 'var(--success)'};">(${daysUntilExpiry} days)</span></p>
+                        <p><strong>Phone:</strong> ${product.vendorPhone}</p>
+                        <p><strong>Batch:</strong> ${product.batchNumber}</p>
+                    </div>
                     <div class="product-actions">
-                        <button class="edit-btn" onclick="editProduct('${product.id}')">Edit</button>
-                        <button class="delete-btn" onclick="deleteProduct('${product.id}')">Delete</button>
+                        <button class="btn-warning" onclick="editProduct('${product.id}')">✏️ Edit</button>
+                        <button class="btn-danger" onclick="deleteProduct('${product.id}')">🗑️ Delete</button>
                     </div>
                 `;
-            } else { // customer
+            } else {
                 card.innerHTML = `
                     <h4>${product.name}</h4>
-                    <p><strong>Product ID:</strong> ${product.id}</p>
-                    <p><strong>Available Quantity:</strong> ${product.quantity}</p>
-                    <p><strong>Expiry Date:</strong> ${formattedExpiry}</p>
-                    <p><strong>Days until expiry:</strong> ${daysUntilExpiry}</p>
-                    ${product.quantity > 0 ? 
-                        `<button class="purchase-btn" onclick="purchaseProduct('${product.id}')">Purchase</button>` : 
-                        '<p style="color: #e74c3c; font-weight: bold;">Out of Stock</p>'
-                    }
+                    <div class="product-info">
+                        <p><strong>ID:</strong> ${product.id}</p>
+                        <p><strong>Available:</strong> ${product.quantity}</p>
+                        <p><strong>Expiry:</strong> ${expiryDate} <span style="color: ${daysUntilExpiry < 0 ? 'var(--danger)' : daysUntilExpiry <= 7 ? 'var(--warning)' : 'var(--success)'};">(${daysUntilExpiry} days)</span></p>
+                    </div>
+                    <div class="product-actions">
+                        ${product.quantity > 0 ? 
+                            `<button class="btn-success" onclick="purchaseProduct('${product.id}')">🛒 Purchase</button>` : 
+                            '<button disabled style="opacity: 0.5;">Out of Stock</button>'
+                        }
+                    </div>
                 `;
             }
-            
+
             return card;
         }
-        
-        // Check for products nearing expiry and display alerts
-        function checkExpiryAlerts() {
-            // Clear previous expiry alerts
-            vendorExpiryList.innerHTML = '';
-            customerExpiryList.innerHTML = '';
-            
-            let hasExpiringProducts = false;
-            let expiredProducts = [];
-            let expiringSoonProducts = [];
-            
-            // Check each product for expiry status
-            products.forEach(product => {
-                const daysUntilExpiry = calculateDaysUntilExpiry(product.expiryDate);
-                
-                if (daysUntilExpiry < 0) {
-                    // Product has already expired
-                    expiredProducts.push(product);
-                    hasExpiringProducts = true;
-                } else if (daysUntilExpiry <= 7) {
-                    // Product is expiring within 7 days
-                    expiringSoonProducts.push(product);
-                    hasExpiringProducts = true;
-                }
-            });
-            
-            // Show/hide expiry alerts section based on whether we have expiring products
-            if (hasExpiringProducts) {
-                vendorExpiryAlerts.style.display = 'block';
-                
-                // Create alerts for vendor
-                if (expiredProducts.length > 0) {
-                    const expiredHeader = document.createElement('li');
-                    expiredHeader.innerHTML = '<strong>EXPIRED PRODUCTS:</strong>';
-                    vendorExpiryList.appendChild(expiredHeader);
-                    
-                    expiredProducts.forEach(product => {
-                        const days = calculateDaysUntilExpiry(product.expiryDate);
-                        const item = document.createElement('li');
-                        item.innerHTML = `${product.name} (ID: ${product.id}) - Expired ${Math.abs(days)} days ago`;
-                        item.style.color = '#e74c3c';
-                        vendorExpiryList.appendChild(item);
-                    });
-                }
-                
-                if (expiringSoonProducts.length > 0) {
-                    const expiringHeader = document.createElement('li');
-                    expiringHeader.innerHTML = '<strong>EXPIRING SOON (within 7 days):</strong>';
-                    vendorExpiryList.appendChild(expiringHeader);
-                    
-                    expiringSoonProducts.forEach(product => {
-                        const days = calculateDaysUntilExpiry(product.expiryDate);
-                        const item = document.createElement('li');
-                        item.innerHTML = `${product.name} (ID: ${product.id}) - Expires in ${days} days`;
-                        item.style.color = '#f39c12';
-                        vendorExpiryList.appendChild(item);
-                    });
-                }
-            } else {
-                vendorExpiryAlerts.style.display = 'none';
-            }
-        }
-        
-        // Calculate days until expiry (negative if already expired)
-        function calculateDaysUntilExpiry(expiryDate) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Reset time part for accurate day calculation
-            
-            const expiry = new Date(expiryDate);
-            expiry.setHours(0, 0, 0, 0);
-            
-            const diffTime = expiry - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            return diffDays;
-        }
-        
-        // Edit a product
-        function editProduct(productId) {
+
+        window.editProduct = function(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-            
-            // Populate form with product data
+
             document.getElementById('product-id').value = product.id;
             document.getElementById('product-name').value = product.name;
             document.getElementById('product-quantity').value = product.quantity;
             document.getElementById('expiry-date').value = product.expiryDate;
             document.getElementById('vendor-phone').value = product.vendorPhone;
             document.getElementById('batch-number').value = product.batchNumber;
+
+            document.getElementById('product-submit-btn').textContent = 'Update Product';
             
-            // Change form button text to "Update Product"
-            const submitButton = productForm.querySelector('button[type="submit"]');
-            submitButton.textContent = 'Update Product';
-            
-            // Change form submission handler to update instead of add
-            productForm.onsubmit = function(e) {
+            DOM.productForm.onsubmit = async (e) => {
                 e.preventDefault();
                 
-                // Get updated form values
                 const updatedProduct = {
                     id: document.getElementById('product-id').value,
                     name: document.getElementById('product-name').value,
@@ -1258,125 +1037,329 @@
                     addedBy: product.addedBy,
                     addedAt: product.addedAt
                 };
-                
-                // Send update to server
-                addProductToServer(updatedProduct);
-                
-                // Reset form and button text
-                productForm.reset();
-                submitButton.textContent = 'Add Product';
-                
-                // Restore original form handler
-                productForm.onsubmit = handleProductSubmit;
+
+                try {
+                    const productRef = window.dbRef(window.db, `products/${updatedProduct.id}`);
+                    await window.dbSet(productRef, updatedProduct);
+                    
+                    showStatus('Product updated successfully!', 'alert-success', 'vendor');
+                    DOM.productForm.reset();
+                    document.getElementById('product-submit-btn').textContent = 'Add Product';
+                    DOM.productForm.onsubmit = null;
+                    location.reload();
+                } catch (error) {
+                    showStatus('Error updating product: ' + error.message, 'alert-danger', 'vendor');
+                }
             };
-        }
-        
-        // Delete a product
-        function deleteProduct(productId) {
-            if (confirm('Are you sure you want to delete this product?')) {
-                deleteProductFromServer(productId);
+        };
+
+        window.deleteProduct = async function(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+
+            try {
+                const productRef = window.dbRef(window.db, `products/${productId}`);
+                await window.dbRemove(productRef);
+                showStatus('Product deleted successfully!', 'alert-success', 'vendor');
+            } catch (error) {
+                showStatus('Error deleting product: ' + error.message, 'alert-danger', 'vendor');
             }
-        }
-        
-        // Handle product purchase (customer)
-        function purchaseProduct(productId) {
+        };
+
+        window.purchaseProduct = async function(productId) {
             if (!currentCustomer) {
-                showStatus('Please login first to make a purchase', 'error', 'customer');
+                showStatus('Please login first!', 'alert-warning', 'customer');
                 return;
             }
-            
-            // Find the product
+
             const product = products.find(p => p.id === productId);
-            if (!product) {
-                showStatus('Product not found!', 'error', 'customer');
+            if (!product || product.quantity <= 0) {
+                showStatus('Product not available!', 'alert-danger', 'customer');
                 return;
             }
+
+            try {
+                const newQuantity = product.quantity - 1;
+                const productRef = window.dbRef(window.db, `products/${productId}`);
+                await window.dbUpdate(productRef, { quantity: newQuantity });
+
+                const purchaseRef = window.dbRef(window.db, `purchases/${currentCustomer}`);
+                const purchaseSnapshot = await window.dbGet(purchaseRef);
+                const currentPurchases = purchaseSnapshot.val() || [];
+                
+                currentPurchases.push({
+                    productId: product.id,
+                    productName: product.name,
+                    date: new Date().toISOString()
+                });
+
+                await window.dbSet(purchaseRef, currentPurchases);
+
+                showStatus(`Successfully purchased ${product.name}!`, 'alert-success', 'customer');
+            } catch (error) {
+                showStatus('Error processing purchase: ' + error.message, 'alert-danger', 'customer');
+            }
+        };
+
+        function checkExpiryAlerts() {
+            const today = new Date();
+            const sevenDaysFromNow = new Date(today);
+            sevenDaysFromNow.setDate(today.getDate() + 7);
+
+            const expiringProducts = products.filter(product => {
+                const expiryDate = new Date(product.expiryDate);
+                return expiryDate <= sevenDaysFromNow && expiryDate >= today;
+            });
+
+            const expiredProducts = products.filter(product => {
+                const expiryDate = new Date(product.expiryDate);
+                return expiryDate < today;
+            });
+
+            const vendorAlertsDiv = document.getElementById('vendor-expiry-alerts');
             
-            // Call purchase function
-            purchaseProductFromServer(productId);
-            
-            // Track the purchase
-            if (product.quantity > 0) {
-                trackCustomerPurchase(productId, product.name);
+            if (expiringProducts.length > 0 || expiredProducts.length > 0) {
+                let alertHTML = '<div class="alert alert-warning"><div><strong>⚠️ Expiry Alerts</strong><ul style="margin: 10px 0 0 20px;">';
+                
+                expiredProducts.forEach(product => {
+                    const days = Math.abs(calculateDaysUntilExpiry(product.expiryDate));
+                    alertHTML += `<li>${product.name} - Expired ${days} days ago</li>`;
+                });
+                
+                expiringProducts.forEach(product => {
+                    const days = calculateDaysUntilExpiry(product.expiryDate);
+                    alertHTML += `<li>${product.name} - Expires in ${days} days</li>`;
+                });
+                
+                alertHTML += '</ul></div></div>';
+                vendorAlertsDiv.innerHTML = alertHTML;
+            } else {
+                vendorAlertsDiv.innerHTML = '';
             }
         }
-        
-        // Show status messages
-        function showStatus(message, type, user) {
-            const statusElement = user === 'vendor' ? vendorStatus : customerStatus;
+
+        function calculateDaysUntilExpiry(expiryDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const expiry = new Date(expiryDate);
+            expiry.setHours(0, 0, 0, 0);
+            const diffTime = expiry - today;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function loadCustomerData() {
+            loadPurchaseHistory();
+            updateCustomerExpiryAlerts();
+        }
+
+        async function loadPurchaseHistory() {
+            if (!currentCustomer) return;
+
+            const purchaseRef = window.dbRef(window.db, `purchases/${currentCustomer}`);
+            const snapshot = await window.dbGet(purchaseRef);
+            const customerPurchases = snapshot.val() || [];
+
+            if (customerPurchases.length === 0) {
+                DOM.purchaseHistoryList.innerHTML = '<p style="color: var(--text-secondary);">No purchases yet.</p>';
+                return;
+            }
+
+            DOM.purchaseHistoryList.innerHTML = customerPurchases.map(purchase => `
+                <div class="purchase-history-item">
+                    <strong>${purchase.productName}</strong><br>
+                    <small style="color: var(--text-secondary);">Purchased on ${new Date(purchase.date).toLocaleString()}</small>
+                </div>
+            `).join('');
+        }
+
+        async function updateCustomerExpiryAlerts() {
+            if (!currentCustomer) return;
+
+            const purchaseRef = window.dbRef(window.db, `purchases/${currentCustomer}`);
+            const snapshot = await window.dbGet(purchaseRef);
+            const customerPurchases = snapshot.val() || [];
+
+            const purchasedProductIds = customerPurchases.map(p => p.productId);
+            const customerProducts = products.filter(product => purchasedProductIds.includes(product.id));
+
+            const today = new Date();
+            const sevenDaysFromNow = new Date(today);
+            sevenDaysFromNow.setDate(today.getDate() + 7);
+
+            const expiringProducts = customerProducts.filter(product => {
+                const expiryDate = new Date(product.expiryDate);
+                return expiryDate <= sevenDaysFromNow && expiryDate >= today;
+            });
+
+            const customerAlertsDiv = document.getElementById('customer-expiry-alerts');
+
+            if (expiringProducts.length > 0) {
+                let alertHTML = '<div class="alert alert-warning"><div><strong>⚠️ Your Purchases Expiring Soon</strong><ul style="margin: 10px 0 0 20px;">';
+                
+                expiringProducts.forEach(product => {
+                    const days = calculateDaysUntilExpiry(product.expiryDate);
+                    alertHTML += `<li>${product.name} - Expires in ${days} days</li>`;
+                });
+                
+                alertHTML += '</ul></div></div>';
+                customerAlertsDiv.innerHTML = alertHTML;
+            } else {
+                customerAlertsDiv.innerHTML = '';
+            }
+        }
+
+        function renderCustomerList() {
+            const customerListDiv = DOM.customerList;
+            const customerEntries = Object.entries(customers);
+
+            if (customerEntries.length === 0) {
+                customerListDiv.innerHTML = '<p style="color: var(--text-secondary);">No customers yet.</p>';
+                return;
+            }
+
+            customerListDiv.innerHTML = customerEntries.map(([username, password]) => `
+                <div class="purchase-history-item">
+                    <strong>👤 ${username}</strong><br>
+                    <small style="color: var(--text-secondary);">Password: ${password}</small>
+                </div>
+            `).join('');
+        }
+
+        function updateAnalytics() {
+            document.getElementById('stat-products').textContent = products.length;
+            document.getElementById('stat-customers').textContent = Object.keys(customers).length;
             
+            const lowStock = products.filter(p => p.quantity < 10).length;
+            document.getElementById('stat-low-stock').textContent = lowStock;
+            
+            const today = new Date();
+            const sevenDays = new Date(today);
+            sevenDays.setDate(today.getDate() + 7);
+            const expiring = products.filter(p => {
+                const expiry = new Date(p.expiryDate);
+                return expiry <= sevenDays && expiry >= today;
+            }).length;
+            document.getElementById('stat-expiring').textContent = expiring;
+        }
+
+        window.switchVendorTab = function(tab) {
+            document.querySelectorAll('#vendor-page .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#vendor-page .tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`vendor-${tab}-tab`).classList.add('active');
+        };
+
+        window.switchCustomerTab = function(tab) {
+            document.querySelectorAll('#customer-dashboard .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#customer-dashboard .tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`customer-${tab}-tab`).classList.add('active');
+        };
+
+        window.toggleQRScanner = function() {
+            if (isScannerActive) {
+                stopQRScanner();
+            } else {
+                startQRScanner();
+            }
+        };
+
+        function startQRScanner() {
+            qrScanner = new Html5Qrcode("qr-reader");
+            
+            qrScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onScanSuccess,
+                onScanError
+            ).then(() => {
+                isScannerActive = true;
+                document.getElementById('qr-toggle-btn').textContent = 'Stop Scanner';
+            }).catch(err => {
+                showStatus('Error starting scanner: ' + err, 'alert-danger', 'customer');
+            });
+        }
+
+        function stopQRScanner() {
+            if (qrScanner) {
+                qrScanner.stop().then(() => {
+                    isScannerActive = false;
+                    document.getElementById('qr-toggle-btn').textContent = 'Start Scanner';
+                });
+            }
+        }
+
+        function onScanSuccess(decodedText) {
+            const product = products.find(p => p.id === decodedText);
+            
+            if (product) {
+                document.getElementById('qr-result').innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>Product Found: ${product.name}</strong><br>
+                        <button onclick="purchaseProduct('${product.id}')" class="btn-success" style="margin-top: 10px;">
+                            Purchase Now
+                        </button>
+                    </div>
+                `;
+                stopQRScanner();
+            } else {
+                document.getElementById('qr-result').innerHTML = `
+                    <div class="alert alert-warning">
+                        Product ID "${decodedText}" not found in inventory.
+                    </div>
+                `;
+            }
+        }
+
+        function onScanError(errorMessage) {
+        }
+
+        window.exportPurchaseHistory = async function() {
+            if (!currentCustomer) return;
+
+            const purchaseRef = window.dbRef(window.db, `purchases/${currentCustomer}`);
+            const snapshot = await window.dbGet(purchaseRef);
+            const customerPurchases = snapshot.val() || [];
+
+            if (customerPurchases.length === 0) {
+                showStatus('No purchase history to export!', 'alert-warning', 'customer');
+                return;
+            }
+
+            let csv = 'Product ID,Product Name,Purchase Date\n';
+            customerPurchases.forEach(purchase => {
+                csv += `${purchase.productId},${purchase.productName},${new Date(purchase.date).toLocaleString()}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `purchase-history-${currentCustomer}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            showStatus('Purchase history exported!', 'alert-success', 'customer');
+        };
+
+        function showStatus(message, type, user) {
+            const statusElement = user === 'vendor' ? DOM.vendorStatus : DOM.customerStatus;
             statusElement.textContent = message;
             statusElement.className = `status-message ${type}`;
             statusElement.style.display = 'block';
             
-            // Hide status after 3 seconds
             setTimeout(() => {
                 statusElement.style.display = 'none';
             }, 3000);
         }
-        
-        // Clear all status messages
-        function clearStatusMessages() {
-            vendorStatus.style.display = 'none';
-            customerStatus.style.display = 'none';
-        }
-        
-        // Helper function to get future dates for testing
-        function getFutureDate(daysFromNow) {
-            const date = new Date();
-            date.setDate(date.getDate() + daysFromNow);
-            return date.toISOString().split('T')[0];
-        }
-        
-        // Initialize with some sample data if empty
-        async function initializeSampleData() {
-            // Don't initialize if configuration is not set
-            if (BIN_ID === "enter" || SECRET_KEY === "enter.") {
-                return;
-            }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            showPage('login-page');
             
-            const fullData = await fetchFullDataFromServer();
-            
-            if (fullData.products.length === 0) {
-                const sampleProducts = [
-                    {
-                        id: 'P001',
-                        name: 'Organic Apples',
-                        quantity: 50,
-                        expiryDate: getFutureDate(20), // 20 days from now
-                        vendorPhone: '555-1234',
-                        batchNumber: 'BATCH001',
-                        addedBy: 'System',
-                        addedAt: new Date().toISOString()
-                    },
-                    {
-                        id: 'P002',
-                        name: 'Whole Wheat Bread',
-                        quantity: 25,
-                        expiryDate: getFutureDate(5), // 5 days from now
-                        vendorPhone: '555-5678',
-                        batchNumber: 'BATCH002',
-                        addedBy: 'System',
-                        addedAt: new Date().toISOString()
-                    }
-                ];
-                
-                const sampleData = {
-                    products: sampleProducts,
-                    purchases: {} // Empty purchases object
-                };
-                
-                await saveFullDataToServer(sampleData);
-                products = sampleProducts;
-                renderProductLists();
-                checkExpiryAlerts();
-            }
-        }
-        
-        // Call initialization on load if configuration is set
-        window.addEventListener('load', function() {
-            if (BIN_ID !== "enter" && SECRET_KEY !== "enter.") {
-                initializeSampleData();
+            if (currentCustomer) {
+                login('customer');
             }
         });
     </script>

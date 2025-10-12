@@ -543,6 +543,7 @@
 
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchVendorTab('products')">📦 Products</button>
+                <button class="tab-btn" onclick="switchVendorTab('qr')">📷 QR Codes</button>
                 <button class="tab-btn" onclick="switchVendorTab('customers')">👥 Customers</button>
                 <button class="tab-btn" onclick="switchVendorTab('analytics')">📊 Analytics</button>
             </div>
@@ -589,6 +590,32 @@
                         Total Products: <strong id="product-count">0</strong>
                     </p>
                     <div id="vendor-product-list" class="product-grid"></div>
+                </div>
+            </div>
+
+            <div id="vendor-qr-tab" class="tab-content">
+                <div class="card">
+                    <h3>📷 Scan Product QR Code</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                        Scan a product QR code to auto-fill the form for quick updates
+                    </p>
+                    <div class="qr-scanner-container">
+                        <div id="vendor-qr-reader"></div>
+                        <button onclick="toggleVendorQRScanner()" id="vendor-qr-toggle-btn">Start Scanner</button>
+                    </div>
+                    <div id="vendor-qr-result" style="margin-top: 20px;"></div>
+                </div>
+
+                <div class="card" id="generated-qr-container" style="display: none;">
+                    <h3>✅ Product QR Code Generated</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                        QR code for the last added/updated product
+                    </p>
+                    <div style="text-align: center; padding: 20px;">
+                        <div id="qr-code-display" style="display: inline-block;"></div>
+                        <div id="qr-product-info" style="margin-top: 16px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;"></div>
+                        <button onclick="downloadQRCode()" class="btn-success" style="margin-top: 16px;">📥 Download QR Code</button>
+                    </div>
                 </div>
             </div>
 
@@ -753,6 +780,7 @@
         initializeDefaultCustomers();
     </script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <script>
@@ -766,6 +794,9 @@
         let unsubscribePurchases = null;
         let qrScanner = null;
         let isScannerActive = false;
+        let vendorQrScanner = null;
+        let isVendorScannerActive = false;
+        let lastGeneratedQR = null;
 
         const DOM = {
             loginPage: document.getElementById('login-page'),
@@ -882,7 +913,8 @@
                 const productRef = window.dbRef(window.db, `products/${product.id}`);
                 await window.dbSet(productRef, product);
                 
-                showStatus('Product saved successfully!', 'alert-success', 'vendor');
+                showStatus('Product saved successfully! QR code generated.', 'alert-success', 'vendor');
+                generateProductQRCode(product);
                 DOM.productForm.reset();
                 document.getElementById('product-submit-btn').textContent = 'Add Product';
             } catch (error) {
@@ -1042,11 +1074,13 @@
                     const productRef = window.dbRef(window.db, `products/${updatedProduct.id}`);
                     await window.dbSet(productRef, updatedProduct);
                     
-                    showStatus('Product updated successfully!', 'alert-success', 'vendor');
+                    showStatus('Product updated successfully! QR code generated.', 'alert-success', 'vendor');
+                    generateProductQRCode(updatedProduct);
                     DOM.productForm.reset();
                     document.getElementById('product-submit-btn').textContent = 'Add Product';
+                    
+                    DOM.productForm.removeEventListener('submit', DOM.productForm.onsubmit);
                     DOM.productForm.onsubmit = null;
-                    location.reload();
                 } catch (error) {
                     showStatus('Error updating product: ' + error.message, 'alert-danger', 'vendor');
                 }
@@ -1353,6 +1387,136 @@
                 statusElement.style.display = 'none';
             }, 3000);
         }
+
+        function generateProductQRCode(product) {
+            const qrContainer = document.getElementById('generated-qr-container');
+            const qrDisplay = document.getElementById('qr-code-display');
+            const qrInfo = document.getElementById('qr-product-info');
+            
+            qrDisplay.innerHTML = '';
+            
+            const qrData = JSON.stringify({
+                id: product.id,
+                name: product.name,
+                quantity: product.quantity,
+                expiryDate: product.expiryDate,
+                vendorPhone: product.vendorPhone,
+                batchNumber: product.batchNumber
+            });
+            
+            lastGeneratedQR = product;
+            
+            new QRCode(qrDisplay, {
+                text: qrData,
+                width: 256,
+                height: 256,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            qrInfo.innerHTML = `
+                <div class="product-info">
+                    <p><strong>Product ID:</strong> ${product.id}</p>
+                    <p><strong>Name:</strong> ${product.name}</p>
+                    <p><strong>Quantity:</strong> ${product.quantity}</p>
+                    <p><strong>Expiry:</strong> ${product.expiryDate}</p>
+                    <p><strong>Phone:</strong> ${product.vendorPhone}</p>
+                    <p><strong>Batch:</strong> ${product.batchNumber}</p>
+                </div>
+            `;
+            
+            qrContainer.style.display = 'block';
+            
+            switchVendorTab('qr');
+        }
+
+        window.toggleVendorQRScanner = function() {
+            if (isVendorScannerActive) {
+                stopVendorQRScanner();
+            } else {
+                startVendorQRScanner();
+            }
+        };
+
+        function startVendorQRScanner() {
+            vendorQrScanner = new Html5Qrcode("vendor-qr-reader");
+            
+            vendorQrScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onVendorScanSuccess,
+                onVendorScanError
+            ).then(() => {
+                isVendorScannerActive = true;
+                document.getElementById('vendor-qr-toggle-btn').textContent = 'Stop Scanner';
+            }).catch(err => {
+                showStatus('Error starting scanner: ' + err, 'alert-danger', 'vendor');
+            });
+        }
+
+        function stopVendorQRScanner() {
+            if (vendorQrScanner) {
+                vendorQrScanner.stop().then(() => {
+                    isVendorScannerActive = false;
+                    document.getElementById('vendor-qr-toggle-btn').textContent = 'Start Scanner';
+                });
+            }
+        }
+
+        function onVendorScanSuccess(decodedText) {
+            try {
+                const productData = JSON.parse(decodedText);
+                
+                document.getElementById('product-id').value = productData.id || '';
+                document.getElementById('product-name').value = productData.name || '';
+                document.getElementById('product-quantity').value = productData.quantity || '';
+                document.getElementById('expiry-date').value = productData.expiryDate || '';
+                document.getElementById('vendor-phone').value = productData.vendorPhone || '';
+                document.getElementById('batch-number').value = productData.batchNumber || '';
+                
+                document.getElementById('vendor-qr-result').innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✅ Product Scanned: ${productData.name}</strong><br>
+                        <small>Form has been auto-filled. Switch to Products tab to update.</small>
+                    </div>
+                `;
+                
+                document.getElementById('product-submit-btn').textContent = 'Update Product';
+                
+                stopVendorQRScanner();
+                
+                setTimeout(() => {
+                    switchVendorTab('products');
+                }, 2000);
+                
+            } catch (error) {
+                document.getElementById('vendor-qr-result').innerHTML = `
+                    <div class="alert alert-warning">
+                        Invalid QR code format. Please scan a product QR code.
+                    </div>
+                `;
+            }
+        }
+
+        function onVendorScanError(errorMessage) {
+        }
+
+        window.downloadQRCode = function() {
+            if (!lastGeneratedQR) {
+                showStatus('No QR code to download!', 'alert-warning', 'vendor');
+                return;
+            }
+            
+            const canvas = document.querySelector('#qr-code-display canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = `product-${lastGeneratedQR.id}-qr.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                showStatus('QR code downloaded!', 'alert-success', 'vendor');
+            }
+        };
 
         document.addEventListener('DOMContentLoaded', function() {
             initTheme();
